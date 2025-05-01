@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ResumeAI - AI-Powered Resume Builder</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    @keyframes blob {
+      0% {
+        transform: translate(0px, 0px) scale(1);
+      }
+      33% {
+        transform: translate(30px, -50px) scale(1.1);
+      }
+      66% {
+        transform: translate(-20px, 20px) scale(0.9);
+      }
+      100% {
+        transform: translate(0px, 0px) scale(1);
+      }
+    }
+
+    @keyframes bounce-subtle {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-5px);
+      }
+    }
+
+    .animate-blob {
+      animation: blob 7s infinite;
+    }
+
+    .animation-delay-2000 {
+      animation-delay: 2s;
+    }
+
+    .animation-delay-4000 {
+      animation-delay: 4s;
+    }
+
+    .animate-bounce-subtle {
+      animation: bounce-subtle 2s infinite;
+    }
+
+    .bg-grid-pattern {
+      background-image: radial-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+
+    .bg-clip-text {
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+
+    .text-transparent {
+      color: transparent;
+    }
+
+    /* Gradient Backgrounds */
+    .from-purple-600 { --tw-gradient-from: #8b5cf6; }
+    .from-indigo-600 { --tw-gradient-from: #4f46e5; }
+    .from-blue-600 { --tw-gradient-from: #2563eb; }
+    .from-purple-400 { --tw-gradient-from: #c084fc; }
+    .from-blue-400 { --tw-gradient-from: #60a5fa; }
+    .from-green-500 { --tw-gradient-from: #10b981; }
+    .to-blue-500 { --tw-gradient-to: #3b82f6; }
+    .to-blue-400 { --tw-gradient-to: #60a5fa; }
+    .to-cyan-500 { --tw-gradient-to: #06b6d4; }
+    .to-cyan-400 { --tw-gradient-to: #22d3ee; }
+    .to-purple-500 { --tw-gradient-to: #a855f7; }
+    .to-indigo-600 { --tw-gradient-to: #4f46e5; }
+    .to-emerald-500 { --tw-gradient-to: #10b981; }
+
+    /* Fix for any backdrop-filter compatibility issues */
+    .backdrop-blur-md {
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    /* Accordion styles */
+    .accordion-header {
+      @apply flex justify-between items-center w-full bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition duration-300 cursor-pointer;
+    }
+    .accordion-content {
+      @apply hidden p-4 bg-gray-50 rounded-b-xl border border-gray-100;
+    }
+    .accordion-content.active {
+      @apply block;
+    }
+  </style>
+</head>
+<body class="min-h-screen font-sans">
+  <!-- Header/Navigation with glass effect -->
+  <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md shadow-sm">
+    <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="bg-gradient-to-br from-purple-600 to-blue-500 p-1.5 rounded-lg">
+          <i class="fas fa-file-alt text-white text-xl"></i>
+        </div>
+        <span class="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">ResumeAI</span>
+      </div>
+      
+      <nav class="hidden md:flex space-x-8">
+        <a href="#features" class="text-gray-600 hover:text-purple-600 transition">Features</a>
+        <a href="#how-it-works" class="text-gray-600 hover:text-purple-600 transition">How It Works</a>
+        <a href="#testimonials" class="text-gray-600 hover:text-purple-600 transition">Testimonials</a>
+        <a href="#faq" class="text-gray-600 hover:text-purple-600 transition">FAQ</a>
+      </nav>
+      
+      <div>
+        <button class="bg-gradient-to-r from-purple-600 to-blue-500 text-white px-6 py-2 rounded-full hover:shadow-lg transition duration-300 font-medium">
+          Get Started Free
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section with animated gradient background -->
+  <section class="relative overflow-hidden bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-50 py-20 md:py-32">
+    <div class="absolute inset-0 bg-grid-pattern opacity-10"></div>
+    <div class="absolute top-20 -left-20 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+    <div class="absolute top-40 -right-20 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+    <div class="absolute -bottom-20 left-40 w-72 h-72 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
+    
+    <div class="container mx-auto px-4 relative z-10">
+      <div class="max-w-4xl mx-auto text-center mb-16">
+        <div class="inline-block px-4 py-2 bg-purple-100 text-purple-600 rounded-full font-bold text-sm mb-6 animate-pulse">
+          100% FREE FOREVER • NO SIGNUP • UNLIMITED EVERYTHING
+        </div>
+        <h1 class="text-5xl md:text-7xl font-bold mb-6">
+          <span class="bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">RÉSUMÉ REVOLUTION</span>: AI-Powered Career Magic
+        </h1>
+        <p class="text-xl text-gray-600 mb-10 max-w-3xl mx-auto">
+          Transform your boring job history into interview-winning gold in <span class="font-bold text-purple-600">60 seconds flat</span>. Your dream job can't resist a resume this good.
+        </p>
+        
+        <div class="flex flex-col sm:flex-row justify-center gap-4 mb-12">
+          <button class="group bg-gradient-to-r from-purple-600 to-blue-500 text-white px-8 py-4 rounded-xl hover:shadow-xl hover:scale-105 transition duration-300 text-lg font-bold flex items-center justify-center gap-2 animate-bounce-subtle">
+            MAKE ME IRRESISTIBLE
+            <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+          </button>
+          <button class="bg-white text-gray-800 px-8 py-4 rounded-xl shadow-md hover:shadow-lg border border-gray-100 transition duration-300 text-lg font-medium flex items-center justify-center gap-2">
+            <i class="fas fa-eye"></i>
+            See The Magic
+          </button>
+        </div>
+      </div>
+      
+      <!-- Hero image with floating elements and glow effect -->
+      <div class="relative max-w-5xl mx-auto">
+        <div class="relative z-10 bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+          <div class="absolute inset-0 bg-gradient-to-tr from-purple-600/5 to-blue-500/5"></div>
+          <img src="/api/placeholder/1200/700" alt="Resume Builder Interface" class="w-full rounded-lg" />
+          
+          <!-- Floating badges -->
+          <div class="absolute -top-6 md:-top-8 -right-6 md:-right-8 bg-gradient-to-r from-purple-600 to-blue-500 text-white p-3 md:p-4 rounded-xl shadow-lg transform rotate-6">
+            <div class="flex items-center gap-2 text-sm md:text-base">
+              <i class="fas fa-sparkles text-yellow-300"></i>
+              <span class="font-medium">AI-Powered</span>
+            </div>
+          </div>
+          <div class="absolute -bottom-4 -left-4 md:-bottom-6 md:-left-6 bg-white p-2 md:p-3 rounded-xl shadow-lg transform -rotate-3">
+            <div class="flex items-center gap-2 text-xs md:text-sm font-medium text-gray-800">
+              <i class="fas fa-check-circle text-green-500"></i>
+              <span>ATS-Optimized</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Floating UI elements for visual interest -->
+        <div class="absolute top-1/2 -right-12 transform -translate-y-1/2 hidden lg:block">
+          <div class="bg-white p-4 rounded-xl shadow-lg w-48">
+            <div class="flex items-center gap-2 mb-2">
+              <i class="fas fa-star text-yellow-400"></i>
+              <span class="text-sm font-medium text-gray-800">Skills Analyzed</span>
+            </div>
+            <div class="space-y-2">
+              <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div class="h-full w-4/5 bg-gradient-to-r from-purple-500 to-blue-400 rounded-full"></div>
+              </div>
+              <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div class="h-full w-3/5 bg-gradient-to-r from-purple-500 to-blue-400 rounded-full"></div>
+              </div>
+              <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div class="h-full w-2/3 bg-gradient-to-r from-purple-500 to-blue-400 rounded-full"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="absolute -bottom-10 -left-12 transform hidden lg:block">
+          <div class="bg-white p-3 rounded-xl shadow-lg flex items-center gap-3">
+            <div class="bg-green-100 rounded-full p-2">
+              <i class="fas fa-file-download text-green-600"></i>
+            </div>
+            <span class="text-sm font-medium text-gray-800">Resume Ready!</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Key benefits with modern cards -->
+  <section class="py-20 bg-white">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-16">
+        <span class="inline-block px-3 py-1 bg-blue-100 text-blue-600 rounded-full font-bold text-sm mb-3">
+          THE UNFAIR ADVANTAGE
+        </span>
+        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          While others send <span class="line-through decoration-red-500">boring resumes</span>, you'll send GOLD
+        </h2>
+        <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+          Our next-level AI doesn't just make resumes—it makes <span class="font-bold text-purple-600">career magic</span> happen. And yes, it's 100% FREE forever.
+        </p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="bg-white rounded-xl p-6 shadow-xl hover:shadow-2xl transition duration-300 border border-gray-100 group">
+          <div class="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl w-14 h-14 flex items-center justify-center mb-6 group-hover:scale-110 transition duration-300">
+            <i class="fas fa-microchip text-white text-xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-3">SUPERHUMAN AI BRAIN</h3>
+          <p class="text-gray-600">
+            Our AI doesn't just write bullet points—it transforms your work history into a jaw-dropping narrative that makes recruiters fight over you.
+          </p>
+        </div>
+        
+        <div class="bg-white rounded-xl p-6 shadow-xl hover:shadow-2xl transition duration-300 border border-gray-100 group">
+          <div class="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl w-14 h-14 flex items-center justify-center mb-6 group-hover:scale-110 transition duration-300">
+            <i class="fas fa-check-circle text-white text-xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-3">ATS DOMINATION</h3>
+          <p class="text-gray-600">
+            While other resumes get rejected by robots, yours slips past the digital gatekeepers with our stealth technology that hiring algorithms LOVE.
+          </p>
+        </div>
+        
+        <div class="bg-white rounded-xl p-6 shadow-xl hover:shadow-2xl transition duration-300 border border-gray-100 group">
+          <div class="bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl w-14 h-14 flex items-center justify-center mb-6 group-hover:scale-110 transition duration-300">
+            <i class="fas fa-file-download text-white text-xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-3">RIDICULOUSLY FREE</h3>
+          <p class="text-gray-600">
+            Premium features without the premium price tag. Create infinite resumes with zero limits. No credit card, no signup, no catch—just pure career rocket fuel.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section with modern cards -->
+  <section id="features" class="py-20 bg-gradient-to-b from-white to-gray-50">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-16">
+        <span class="inline-block px-3 py-2 bg-purple-100 text-purple-600 rounded-full font-bold text-sm mb-3 animate-pulse">
+          WEAPONS OF MASS IMPRESSION
+        </span>
+        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          Features so powerful they should be <span class="bg-yellow-200 px-1">illegal</span> (but they're FREE)
+        </h2>
+        <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+          Other sites charge $29.99/month for what we're giving away. Call us crazy, but we believe career success shouldn't cost a fortune.
+        </p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition duration-300 border border-gray-100">
+          <div class="bg-gray-50 rounded-xl w-14 h-14 flex items-center justify-center mb-6">
+            <i class="fas fa-bolt text-purple-600 text-xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-3">AI Content Generator</h3>
+          <p class="text-gray-600">
+            Our AI analyzes your experience and skills to write compelling descriptions that make your resume stand out.
+          </p>
+        </div>
+        
+        <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition duration-300 border border-gray-100">
+          <div class="bg-gray-50 rounded-xl w-14 h-14 flex items-center justify-center mb-6">
+            <i class="fas fa-briefcase text-blue-600 text-xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-3">Premium Templates</h3>
+          <p class="text-gray-600">
+            Choose from dozens of professionally designed templates optimized for different industries and career levels.
+          </p>
+        </div>
+        
+        <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition duration-300 border border-gray-100">
+          <div class="bg-gray-50 rounded-xl w-14 h-14 flex items-center justify-center mb-6">
+            <i class="fas fa-award text-indigo-600 text-xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-3">Job-Specific Tailoring</h3>
+          <p class="text-gray-600">
+            Our AI customizes your resume for each job application to maximize your chances of landing interviews.
+          </p>
+        </div>
+        
+        <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition duration-300 border border-gray-100">
+          <div class="bg-gray-50 rounded-xl w-14 h-14 flex items-center justify-center mb-6">
+            <i class="fas fa-check-circle text-green-600 text-xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-3">ATS Optimization</h3>
+          <p class="text-gray-600">
+            Ensure your resume passes through Applicant Tracking Systems with our optimized formats and keyword analysis.
+          </p>
+        </div>
+        
+        <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition duration-300 border border-gray-100">
+          <div class="bg-gray-50 rounded-xl w-14 h-14 flex items-center justify-center mb-6">
+            <i class="fas fa-file-download text-cyan-600 text-xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-3">Multiple Export Formats</h3>
+          <p class="text-gray-600">
+            Download your resume in PDF, DOCX, or TXT formats to suit any application requirement.
+          </p>
+        </div>
+        
+        <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition duration-300 border border-gray-100">
+          <div class="bg-gray-50 rounded-xl w-14 h-14 flex items-center justify-center mb-6">
+            <i class="fas fa-users text-pink-600 text-xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-3">Cover Letter Generator</h3>
+          <p class="text-gray-600">
+            Create matching cover letters that complement your resume and reinforce your application.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works Section with modern design -->
+  <section id="how-it-works" class="py-20 bg-gradient-to-br from-gray-50 to-gray-100">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-16">
+        <span class="inline-block px-3 py-1 bg-indigo-100 text-indigo-600 rounded-full font-bold text-sm mb-3">
+          60-SECOND MAGIC
+        </span>
+        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          3 steps to a resume that makes recruiters say <span class="italic font-bold text-green-600">"HIRED!"</span>
+        </h2>
+        <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+          Less time making your resume = More time celebrating your job offers
+        </p>
+      </div>
+      
+      <div class="max-w-5xl mx-auto">
+        <div class="flex flex-col md:flex-row items-start gap-6 mb-12 group">
+          <div class="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl w-16 h-16 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition duration-300">
+            <div class="text-white font-bold">01</div>
+          </div>
+          <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100 flex-1">
+            <h3 class="text-xl font-semibold text-gray-900 mb-3">DUMP YOUR BRAIN</h3>
+            <p class="text-gray-600 mb-4">Just throw your messy job history at us. No formatting, no stress—our AI will sort out the gold from the garbage.</p>
+            <div class="hidden md:block">
+              <div class="w-8 h-8 bg-gray-50 rounded-full flex items-center justify-center mx-auto">
+                <i class="fas fa-chevron-right text-gray-400"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flex flex-col md:flex-row items-start gap-6 mb-12 group">
+          <div class="bg-gradient-to-r from-blue-500 to-cyan-400 rounded-xl w-16 h-16 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition duration-300">
+            <div class="text-white font-bold">02</div>
+          </div>
+          <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100 flex-1">
+            <h3 class="text-xl font-semibold text-gray-900 mb-3">AI TRANSFORMS YOU</h3>
+            <p class="text-gray-600 mb-4">Our robot geniuses turn your ordinary experience into extraordinary achievements that make you look like the superstar you truly are.</p>
+            <div class="hidden md:block">
+              <div class="w-8 h-8 bg-gray-50 rounded-full flex items-center justify-center mx-auto">
+                <i class="fas fa-chevron-right text-gray-400"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flex flex-col md:flex-row items-start gap-6 mb-12 group">
+          <div class="bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl w-16 h-16 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition duration-300">
+            <div class="text-white font-bold">03</div>
+          </div>
+          <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100 flex-1">
+            <h3 class="text-xl font-semibold text-gray-900 mb-3">WEAPONIZE & DEPLOY</h3>
+            <p class="text-gray-600 mb-4">Download your career-changing resume and watch job offers flood your inbox. Warning: may cause extreme career satisfaction.</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="text-center mt-12">
+        <button class="bg-gradient-to-r from-purple-600 to-blue-500 text-white px-8 py-4 rounded-xl hover:shadow-lg transition duration-300 text-lg font-medium">
+          Create Your Resume Now
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials Section with modern cards -->
+  <section id="testimonials" class="py-20 bg-white">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-16">
+        <span class="inline-block px-3 py-1 bg-green-100 text-green-600 rounded-full font-bold text-sm mb-3">
+          THE PROOF IS IN THE PAYCHECK
+        </span>
+        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          People who thought we were <span class="italic">lying</span> until they got <span class="bg-gradient-to-r from-green-500 to-emerald-500 bg-clip-text text-transparent">THE CALL</span>
+        </h2>
+        <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+          These people went from "still waiting to hear back" to "sorry, I've accepted another offer" real quick
+        </p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="rounded-xl p-6 shadow-lg border border-gray-100 bg-gradient-to-br from-purple-100 to-indigo-100">
+          <div class="flex mb-4">
+            <i class="fas fa-star text-yellow-400"></i>
+            <i class="fas fa-star text-yellow-400"></i>
+            <i class="fas fa-star text-yellow-400"></i>
+            <i class="fas fa-star text-yellow-400"></i>
+            <i class="fas fa-star text-yellow-400"></i>
+          </div>
+          <p class="text-gray-700 mb-6 italic">
+            "My old resume got ZERO responses for 3 months. My new AI resume? FIVE INTERVIEWS IN ONE WEEK and a job offer with a 40% salary increase! This isn't a resume builder, it's a MONEY PRINTER."
+          </p>
+          <div class="flex items-center gap-3">
+            <div class="bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-sm">
+              <i class="fas fa-users text-gray-600"></i>
+            </div>
+            <div>
+              <h4 class="font-medium text-gray-900">Sarah J.</h4>
+              <p class="text-sm text-gray-500">Senior Software Engineer</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="rounded-xl p-6 shadow-lg border border-gray-100 bg-gradient-to-br from-blue-100 to-cyan-100">
+          <div class="flex mb-4">
+            <i class="fas fa-star text-yellow-400"></i>
+            <i class="fas fa-star text-yellow-400"></i>
+            <i class="fas fa-star text-yellow-400"></i>
+            <i class="fas fa-star text-yellow-400"></i>
+            <i class="fas fa-star text-yellow-400"></i>
+          </div>
+          <p class="text-gray-700 mb-6 italic">
+            "As a fresh graduate competing against 200+ applicants, I had NO CHANCE until I used this tool. The hiring manager literally told me my resume was 'refreshingly impressive' compared to others. HIRED ON THE SPOT!"
+          </p>
+          <div class="flex items-center gap-3">
+            <div class="bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-sm">
+              <i class="fas fa-users text-gray-600"></i>
+            </div>
+            <div>
+              <h4 class="font-medium text-gray-900">Emily C.</h4>
+              <p class="text-sm text-gray-500">Marketing Specialist</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="rounded-xl p-6 shadow-lg border border-gray-100 bg-gradient-to-br from-indigo-100 to-purple-100">
+          <div class="flex mb-4">
+            <i class="fas fa-star text-yellow-400"></i>
+            <i class="fas fa-star text-yellow-400"></i>
+            <i class="fas fa-star text-yellow-400"></i>
+            <i class="fas fa-star text-yellow-400"></i>
+            <i class="fas fa-star text-yellow-400"></i>
+          </div>
+          <p class="text-gray-700 mb-6 italic">
+            "I was about to give up on my dream career after 6 months of rejections. Created one resume here and BAM—interviews at Google AND Amazon within 72 hours. Not exaggerating. This tool is CAREER SORCERY."
+          </p>
+          <div class="flex items-center gap-3">
+            <div class="bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-sm">
+              <i class="fas fa-users text-gray-600"></i>
+            </div>
+            <div>
+              <h4 class="font-medium text-gray-900">Michael R.</h4>
+              <p class="text-sm text-gray-500">Product Manager</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section id="faq" class="py-20 bg-gray-50">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-16">
+        <span class="inline-block px-3 py-1 bg-blue-100 text-blue-600 rounded-full font-bold text-sm mb-3 animate-pulse">
+          GOT QUESTIONS? WE'VE GOT ANSWERS
+        </span>
+        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          Frequently Asked Questions (Because <span class="bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">You're Curious</span>)
+        </h2>
+        <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+          Wondering how we make career magic happen? Here’s everything you need to know to jump in with confidence.
+        </p>
+      </div>
+
+      <div class="max-w-3xl mx-auto space-y-4">
+        <!-- Accordion Item -->
+        <div class="accordion">
+          <div class="accordion-header flex justify-between items-center bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition duration-300 cursor-pointer">
+            <h3 class="text-lg font-semibold text-gray-900">Is ResumeAI really 100% free with no hidden costs?</h3>
+            <i class="fas fa-chevron-down text-gray-600 transition-transform duration-300"></i>
+          </div>
+          <div class="accordion-content hidden p-4 bg-gray-50 rounded-b-xl border border-gray-100">
+            <p class="text-gray-600">
+              Yup, 100% free, no strings attached! No subscriptions, no credit card, no sneaky upsells. We’re powered by passion for helping you land your dream job, not by your wallet.
+            </p>
+          </div>
+        </div>
+
+        <!-- Repeat for other FAQ items -->
+        <div class="accordion">
+          <div class="accordion-header flex justify-between items-center bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition duration-300 cursor-pointer">
+            <h3 class="text-lg font-semibold text-gray-900">Do I need to sign up or create an account?</h3>
+            <i class="fas fa-chevron-down text-gray-600 transition-transform duration-300"></i>
+          </div>
+          <div class="accordion-content hidden p-4 bg-gray-50 rounded-b-xl border border-gray-100">
+            <p class="text-gray-600">
+              Nope! Just dive in and start building your resume. We don’t waste your time with logins or forms—your career success is our only priority.
+            </p>
+          </div>
+        </div>
+
+        <!-- Add more accordion items as needed -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA Section -->
+  <section class="py-20 bg-gradient-to-br from-purple-600 to-blue-500 relative overflow-hidden">
+    <div class="absolute inset-0 bg-grid-pattern opacity-10"></div>
+    <div class="absolute top-20 -left-20 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+    <div class="absolute bottom-20 -right-20 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+    
+    <div class="container mx-auto px-4 text-center relative z-10">
+      <div class="inline-block px-4 py-2 bg-white text-purple-600 rounded-full font-bold text-sm mb-6 animate-pulse">
+        YOUR DREAM JOB IS WAITING
+      </div>
+      <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">
+        Stop Wishing. Start <span class="bg-yellow-200 text-gray-900 px-2 rounded">Winning</span>.
+      </h2>
+      <p class="text-lg text-gray-100 mb-10 max-w-3xl mx-auto">
+        Your next career move is one click away. Create a resume that makes recruiters beg to hire you—100% free, no catch, just pure career magic.
+      </p>
+      <button class="group bg-white text-purple-600 px-8 py-4 rounded-xl hover:shadow-xl hover:scale-105 transition duration-300 text-lg font-bold flex items-center justify-center gap-2 mx-auto animate-bounce-subtle">
+        Build My Resume Now
+        <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+      </button>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-gray-300 py-12">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+        <div>
+          <div class="flex items-center gap-2 mb-4">
+            <div class="bg-gradient-to-br from-purple-600 to-blue-500 p-1.5 rounded-lg">
+              <i class="fas fa-file-alt text-white text-xl"></i>
+            </div>
+            <span class="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">ResumeAI</span>
+          </div>
+          <p class="text-sm">
+            AI-powered resume and cover letter builder that transforms your career in 60 seconds. Free forever, no strings attached.
+          </p>
+        </div>
+        <div>
+          <h3 class="text-white font-semibold mb-4">Resources</h3>
+          <ul class="space-y-2 text-sm">
+            <li><a href="#" class="hover:text-purple-400 transition">Resume Templates</a></li>
+            <li><a href="#" class="hover:text-purple-400 transition">Cover Letter Guides</a></li>
+            <li><a href="#" class="hover:text-purple-400 transition">Career Advice</a></li>
+            <li><a href="#" class="hover:text-purple-400 transition">Blog</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-white font-semibold mb-4">Support</h3>
+          <ul class="space-y-2 text-sm">
+            <li><a href="#" class="hover:text-purple-400 transition">Help Center</a></li>
+            <li><a href="#" class="hover:text-purple-400 transition">Contact Us</a></li>
+            <li><a href="#" class="hover:text-purple-400 transition">Privacy Policy</a></li>
+            <li><a href="#" class="hover:text-purple-400 transition">Terms of Service</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-white font-semibold mb-4">Stay Connected</h3>
+          <p class="text-sm mb-4">Get career tips and updates straight to your inbox.</p>
+          <div class="flex gap-2">
+            <input type="email" placeholder="Your email" class="bg-gray-800 text-white rounded-lg px-4 py-2 border border-gray-700 focus:outline-none focus:border-purple-500 w-full text-sm" />
+            <button class="bg-gradient-to-r from-purple-600 to-blue-500 text-white p-2 rounded-lg hover:shadow-lg transition">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="border-t border-gray-800 pt-8 text-center">
+        <p class="text-sm">© 2025 ResumeAI. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Accordion functionality
+    document.addEventListener('DOMContentLoaded', () => {
+      const accordionHeaders = document.querySelectorAll('.accordion-header');
+
+      accordionHeaders.forEach(header => {
+        header.addEventListener('click', () => {
+          const content = header.nextElementSibling;
+          const icon = header.querySelector('.fa-chevron-down');
+
+          // Toggle active class
+          content.classList.toggle('hidden');
+          icon.classList.toggle('rotate-180');
+
+          // Close other accordions
+          accordionHeaders.forEach(otherHeader => {
+            if (otherHeader !== header) {
+              otherHeader.nextElementSibling.classList.add('hidden');
+              otherHeader.querySelector('.fa-chevron-down').classList.remove('rotate-180');
+            }
+          });
+        });
+      });
+    });
+  </script>
+</body>
+</html>

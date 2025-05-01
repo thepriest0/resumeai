@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ResumeAI - Build Your Resume</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    @keyframes blob {
+      0% { transform: translate(0px, 0px) scale(1); }
+      33% { transform: translate(30px, -50px) scale(1.1); }
+      66% { transform: translate(-20px, 20px) scale(0.9); }
+      100% { transform: translate(0px, 0px) scale(1); }
+    }
+
+    @keyframes bounce-subtle {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    .animate-blob { animation: blob 7s infinite; }
+    .animation-delay-2000 { animation-delay: 2s; }
+    .animation-delay-4000 { animation-delay: 4s; }
+    .animate-bounce-subtle { animation: bounce-subtle 2s infinite; }
+    .bg-grid-pattern {
+      background-image: radial-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+    .bg-clip-text { -webkit-background-clip: text; background-clip: text; }
+    .text-transparent { color: transparent; }
+    .from-purple-600 { --tw-gradient-from: #8b5cf6; }
+    .from-indigo-600 { --tw-gradient-from: #4f46e5; }
+    .from-blue-600 { --tw-gradient-from: #2563eb; }
+    .from-purple-400 { --tw-gradient-from: #c084fc; }
+    .from-blue-400 { --tw-gradient-from: #60a5fa; }
+    .from-green-500 { --tw-gradient-from: #10b981; }
+    .to-blue-500 { --tw-gradient-to: #3b82f6; }
+    .to-blue-400 { --tw-gradient-to: #60a5fa; }
+    .to-cyan-500 { --tw-gradient-to: #06b6d4; }
+    .to-cyan-400 { --tw-gradient-to: #22d3ee; }
+    .to-purple-500 { --tw-gradient-to: #a855f7; }
+    .to-indigo-600 { --tw-gradient-to: #4f46e5; }
+    .to-emerald-500 { --tw-gradient-to: #10b981; }
+    .backdrop-blur-md {
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .progress-step {
+      @apply w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium;
+    }
+    .progress-step.active {
+      @apply bg-gradient-to-r from-purple-600 to-blue-500 text-white;
+    }
+    .progress-step.completed {
+      @apply bg-green-500 text-white;
+    }
+    .progress-line {
+      @apply h-1 bg-gray-200 flex-1;
+    }
+    .progress-line.completed {
+      @apply bg-gradient-to-r from-purple-600 to-blue-500;
+    }
+  </style>
+</head>
+<body class="min-h-screen font-sans bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-50">
+  <!-- Header -->
+  <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md shadow-sm">
+    <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="bg-gradient-to-br from-purple-600 to-blue-500 p-1.5 rounded-lg">
+          <i class="fas fa-file-alt text-white text-xl"></i>
+        </div>
+        <span class="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">ResumeAI</span>
+      </div>
+      <nav class="hidden md:flex space-x-8">
+        <a href="index.html#features" class="text-gray-600 hover:text-purple-600 transition">Features</a>
+        <a href="index.html#how-it-works" class="text-gray-600 hover:text-purple-600 transition">How It Works</a>
+        <a href="index.html#testimonials" class="text-gray-600 hover:text-purple-600 transition">Testimonials</a>
+        <a href="index.html#faq" class="text-gray-600 hover:text-purple-600 transition">FAQ</a>
+      </nav>
+      <div>
+        <a href="index.html" class="bg-gradient-to-r from-purple-600 to-blue-500 text-white px-6 py-2 rounded-full hover:shadow-lg transition duration-300 font-medium">
+          Back to Home
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Form Section -->
+  <section class="py-20 relative overflow-hidden">
+    <div class="absolute inset-0 bg-grid-pattern opacity-10"></div>
+    <div class="absolute top-20 -left-20 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+    <div class="absolute top-40 -right-20 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+    <div class="absolute -bottom-20 left-40 w-72 h-72 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
+    
+    <div class="container mx-auto px-4 relative z-10">
+      <div class="text-center mb-16">
+        <div class="inline-block px-4 py-2 bg-purple-100 text-purple-600 rounded-full font-bold text-sm mb-6 animate-pulse">
+          CREATE YOUR WINNING RESUME
+        </div>
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          Build Your <span class="bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">Career Magic</span> in 3 Steps
+        </h1>
+        <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+          Fill out these quick steps, and our AI will craft a resume that makes recruiters fight over you. 100% free, no catch.
+        </p>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="max-w-3xl mx-auto mb-12">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center flex-1">
+            <div class="progress-step active">1</div>
+            <span class="text-sm font-medium text-gray-600 ml-2">Personal Info</span>
+          </div>
+          <div class="progress-line"></div>
+          <div class="flex items-center flex-1">
+            <div class="progress-step">2</div>
+            <span class="text-sm font-medium text-gray-600 ml-2">Education</span>
+          </div>
+          <div class="progress-line"></div>
+          <div class="flex items-center flex-1">
+            <div class="progress-step">3</div>
+            <span class="text-sm font-medium text-gray-600 ml-2">Work Experience</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Container -->
+      <form id="resume-form" action="/form" method="POST">
+        <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+          <div id="form-step-1" class="form-step">
+            <h2 class="text-2xl font-semibold text-gray-900 mb-6">Step 1: Personal Information</h2>
+            <div class="space-y-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                <input type="text" name="fullname" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" placeholder="John Doe" required>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                <input type="email" name="email" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" placeholder="john.doe@example.com" required>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                <input type="tel" name="phone" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" placeholder="+1 (123) 456-7890">
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">State/Province</label>
+                  <input type="text" name="state" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" placeholder="e.g., California">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                  <input type="text" name="country" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" placeholder="e.g., United States">
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">LinkedIn Profile (Optional)</label>
+                <input type="url" name="linkedin" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" placeholder="https://linkedin.com/in/johndoe">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Skills</label>
+                <div id="skills-container" class="flex flex-wrap gap-2 border border-gray-300 rounded-lg p-2">
+                  <input
+                    type="text"
+                    id="skills-input"
+                    class="flex-1 px-2 py-1 focus:outline-none"
+                    placeholder="Type a skill and press Enter"
+                    onkeydown="addSkill(event)"
+                  />
+                </div>
+              </div>
+            </div>
+            <div class="mt-8 flex justify-end">
+              <button type="button" onclick="nextStep(2)" class="bg-gradient-to-r from-purple-600 to-blue-500 text-white px-6 py-3 rounded-xl hover:shadow-lg transition duration-300 font-medium">
+                Next: Education
+              </button>
+            </div>
+          </div>
+
+          <div id="form-step-2" class="form-step hidden">
+            <h2 class="text-2xl font-semibold text-gray-900 mb-6">Step 2: Education</h2>
+            <div id="education-entries" class="space-y-6">
+              <div class="education-entry bg-gray-50 rounded-xl p-6 border border-gray-100">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Degree</label>
+                    <input type="text" name="degree[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" placeholder="e.g., Bachelor of Science">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Institution</label>
+                    <input type="text" name="institution[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" placeholder="e.g., University of Example">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Start Year</label>
+                    <input type="number" name="start_year[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" placeholder="e.g., 2018">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">End Year (or Expected)</label>
+                    <input type="number" name="end_year[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" placeholder="e.g., 2022">
+                  </div>
+                </div>
+                <button type="button" onclick="removeEntry(this)" class="mt-4 text-red-600 hover:text-red-800 transition text-sm font-medium">Remove Entry</button>
+              </div>
+            </div>
+            <button type="button" onclick="addEducationEntry()" class="mt-6 bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-6 py-3 rounded-xl hover:shadow-lg transition duration-300 font-medium">
+              Add Another Education
+            </button>
+            <div class="mt-8 flex justify-between">
+              <button type="button" onclick="prevStep(1)" class="bg-gray-200 text-gray-800 px-6 py-3 rounded-xl hover:shadow-lg transition duration-300 font-medium">
+                Back
+              </button>
+              <button type="button" onclick="nextStep(3)" class="bg-gradient-to-r from-purple-600 to-blue-500 text-white px-6 py-3 rounded-xl hover:shadow-lg transition duration-300 font-medium">
+                Next: Work Experience
+              </button>
+            </div>
+          </div>
+
+          <div id="form-step-3" class="form-step hidden">
+            <h2 class="text-2xl font-semibold text-gray-900 mb-6">Step 3: Work Experience</h2>
+            <div id="experience-entries" class="space-y-6">
+              <div class="experience-entry bg-gray-50 rounded-xl p-6 border border-gray-100">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Job Title</label>
+                    <input type="text" name="job_title[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" placeholder="e.g., Software Engineer">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Company</label>
+                    <input type="text" name="company[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" placeholder="e.g., Tech Corp">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                    <input type="month" name="start_date[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">End Date (or Present)</label>
+                    <input type="month" name="end_date[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition">
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea name="description[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" rows="4" placeholder="Describe your responsibilities and achievements"></textarea>
+                  </div>
+                </div>
+                <button type="button" onclick="removeEntry(this)" class="mt-4 text-red-600 hover:text-red-800 transition text-sm font-medium">Remove Entry</button>
+              </div>
+            </div>
+            <button type="button" onclick="addExperienceEntry()" class="mt-6 bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-6 py-3 rounded-xl hover:shadow-lg transition duration-300 font-medium">
+              Add Another Experience
+            </button>
+            <div class="mt-8 flex justify-between">
+              <button type="button" onclick="prevStep(2)" class="bg-gray-200 text-gray-800 px-6 py-3 rounded-xl hover:shadow-lg transition duration-300 font-medium">
+                Back
+              </button>
+              <button type="button" onclick="submitForm()" class="bg-gradient-to-r from-purple-600 to-blue-500 text-white px-6 py-3 rounded-xl hover:shadow-lg transition duration-300 font-medium">
+                Submit Resume
+              </button>
+            </div>
+          </div>
+
+          <div id="form-success" class="form-step hidden text-center">
+            <div class="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+              <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+            </div>
+            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Resume Created Successfully!</h2>
+            <p class="text-lg text-gray-600 mb-8">
+              Your AI-powered resume is ready to make recruiters fight over you. Download it now and start landing interviews!
+            </p>
+            <a href="/result" class="bg-gradient-to-r from-purple-600 to-blue-500 text-white px-8 py-4 rounded-xl hover:shadow-lg transition duration-300 text-lg font-medium">
+              Download Resume
+            </a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-gray-300 py-12">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+        <div>
+          <div class="flex items-center gap-2 mb-4">
+            <div class="bg-gradient-to-br from-purple-600 to-blue-500 p-1.5 rounded-lg">
+              <i class="fas fa-file-alt text-white text-xl"></i>
+            </div>
+            <span class="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">ResumeAI</span>
+          </div>
+          <p class="text-sm">
+            AI-powered resume and cover letter builder that transforms your career in 60 seconds. Free forever, no strings attached.
+          </p>
+        </div>
+        <div>
+          <h3 class="text-white font-semibold mb-4">Resources</h3>
+          <ul class="space-y-2 text-sm">
+            <li><a href="index.html#" class="hover:text-purple-400 transition">Resume Templates</a></li>
+            <li><a href="index.html#" class="hover:text-purple-400 transition">Cover Letter Guides</a></li>
+            <li><a href="index.html#" class="hover:text-purple-400 transition">Career Advice</a></li>
+            <li><a href="index.html#" class="hover:text-purple-400 transition">Blog</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-white font-semibold mb-4">Support</h3>
+          <ul class="space-y-2 text-sm">
+            <li><a href="index.html#" class="hover:text-purple-400 transition">Help Center</a></li>
+            <li><a href="index.html#" class="hover:text-purple-400 transition">Contact Us</a></li>
+            <li><a href="index.html#" class="hover:text-purple-400 transition">Privacy Policy</a></li>
+            <li><a href="index.html#" class="hover:text-purple-400 transition">Terms of Service</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-white font-semibold mb-4">Stay Connected</h3>
+          <p class="text-sm mb-4">Get career tips and updates straight to your inbox.</p>
+          <div class="flex gap-2">
+            <input type="email" placeholder="Your email" class="bg-gray-800 text-white rounded-lg px-4 py-2 border border-gray-700 focus:outline-none focus:border-purple-500 w-full text-sm" />
+            <button class="bg-gradient-to-r from-purple-600 to-blue-500 text-white p-2 rounded-lg hover:shadow-lg transition">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="border-t border-gray-800 pt-8 text-center">
+        <p class="text-sm">© 2025 ResumeAI. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    let currentStep = 1;
+
+    function nextStep(step) {
+      document.getElementById(`form-step-${currentStep}`).classList.add('hidden');
+      document.getElementById(`form-step-${step}`).classList.remove('hidden');
+      
+      // Update progress bar
+      document.querySelectorAll('.progress-step').forEach((el, index) => {
+        if (index + 1 < step) {
+          el.classList.remove('active');
+          el.classList.add('completed');
+        } else if (index + 1 === step) {
+          el.classList.add('active');
+          el.classList.remove('completed');
+        } else {
+          el.classList.remove('active', 'completed');
+        }
+      });
+      document.querySelectorAll('.progress-line').forEach((el, index) => {
+        if (index + 1 < step) {
+          el.classList.add('completed');
+        } else {
+          el.classList.remove('completed');
+        }
+      });
+
+      currentStep = step;
+    }
+
+    function prevStep(step) {
+      document.getElementById(`form-step-${currentStep}`).classList.add('hidden');
+      document.getElementById(`form-step-${step}`).classList.remove('hidden');
+      
+      // Update progress bar
+      document.querySelectorAll('.progress-step').forEach((el, index) => {
+        if (index + 1 < step) {
+          el.classList.remove('active');
+          el.classList.add('completed');
+        } else if (index + 1 === step) {
+          el.classList.add('active');
+          el.classList.remove('completed');
+        } else {
+          el.classList.remove('active', 'completed');
+        }
+      });
+      document.querySelectorAll('.progress-line').forEach((el, index) => {
+        if (index + 1 < step) {
+          el.classList.add('completed');
+        } else {
+          el.classList.remove('completed');
+        }
+      });
+
+      currentStep = step;
+    }
+
+    function addEducationEntry() {
+      const entry = document.createElement('div');
+      entry.className = 'education-entry bg-gray-50 rounded-xl p-6 border border-gray-100';
+      entry.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Degree</label>
+            <input type="text" name="degree[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" placeholder="e.g., Bachelor of Science">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Institution</label>
+            <input type="text" name="institution[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" placeholder="e.g., University of Example">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Start Year</label>
+            <input type="number" name="start_year[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" placeholder="e.g., 2018">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">End Year (or Expected)</label>
+            <input type="number" name="end_year[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" placeholder="e.g., 2022">
+          </div>
+        </div>
+        <button type="button" onclick="removeEntry(this)" class="mt-4 text-red-600 hover:text-red-800 transition text-sm font-medium">Remove Entry</button>
+      `;
+      document.getElementById('education-entries').appendChild(entry);
+    }
+
+    function addExperienceEntry() {
+      const entry = document.createElement('div');
+      entry.className = 'experience-entry bg-gray-50 rounded-xl p-6 border border-gray-100';
+      entry.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Job Title</label>
+            <input type="text" name="job_title[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" placeholder="e.g., Software Engineer">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Company</label>
+            <input type="text" name="company[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" placeholder="e.g., Tech Corp">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+            <input type="month" name="start_date[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">End Date (or Present)</label>
+            <input type="month" name="end_date[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition">
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <textarea name="description[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" rows="4" placeholder="Describe your responsibilities and achievements"></textarea>
+          </div>
+        </div>
+        <button type="button" onclick="removeEntry(this)" class="mt-4 text-red-600 hover:text-red-800 transition text-sm font-medium">Remove Entry</button>
+      `;
+      document.getElementById('experience-entries').appendChild(entry);
+    }
+
+    function removeEntry(button) {
+      button.parentElement.remove();
+    }
+
+    function addSkill(event) {
+      if (event.key === 'Enter' && event.target.value.trim() !== '') {
+        event.preventDefault();
+        const skill = event.target.value.trim();
+        const skillsContainer = document.getElementById('skills-container');
+
+        // Create a skill tag
+        const skillTag = document.createElement('span');
+        skillTag.className = 'bg-purple-100 text-purple-600 px-3 py-1 rounded-full text-sm flex items-center gap-2';
+        skillTag.innerHTML = `
+          ${skill}
+          <input type="hidden" name="skills[]" value="${skill}">
+          <button
+            type="button"
+            class="text-red-500 hover:text-red-700"
+            onclick="removeSkill(this)"
+          >
+            ×
+          </button>
+        `;
+
+        // Add the skill tag to the container
+        skillsContainer.insertBefore(skillTag, event.target);
+
+        // Clear the input field
+        event.target.value = '';
+      }
+    }
+
+    function removeSkill(button) {
+      button.parentElement.remove();
+    }
+
+    function submitForm() {
+      // Validate required fields
+      const step1Inputs = document.querySelectorAll('#form-step-1 input[required]');
+      let isValid = true;
+      step1Inputs.forEach(input => {
+        if (!input.value.trim()) {
+          isValid = false;
+          input.classList.add('border-red-500');
+        } else {
+          input.classList.remove('border-red-500');
+        }
+      });
+
+      if (!isValid) {
+        alert('Please fill out all required fields in Personal Information.');
+        return;
+      }
+
+      // Submit the form
+      document.getElementById('resume-form').submit();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ResumeAI - Your Resume</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    .bg-clip-text { -webkit-background-clip: text; background-clip: text; }
+    .text-transparent { color: transparent; }
+    .from-purple-600 { --tw-gradient-from: #8b5cf6; }
+    .to-blue-500 { --tw-gradient-to: #3b82f6; }
+    .backdrop-blur-md {
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .experience-bullets {
+      list-style-type: none;
+      padding-left: 1rem;
+    }
+    .experience-bullets li {
+      position: relative;
+      margin-bottom: 0.5rem;
+      color: #4b5563;
+    }
+    .experience-bullets li:before {
+      content: "•";
+      position: absolute;
+      left: -1rem;
+      color: #4b5563;
+    }
+  </style>
+</head>
+<body class="min-h-screen font-sans bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-50">
+  <!-- Header -->
+  <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md shadow-sm">
+    <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="bg-gradient-to-br from-purple-600 to-blue-500 p-1.5 rounded-lg">
+          <i class="fas fa-file-alt text-white text-xl"></i>
+        </div>
+        <span class="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">ResumeAI</span>
+      </div>
+      <div>
+        <a href="/" class="bg-gradient-to-r from-purple-600 to-blue-500 text-white px-6 py-2 rounded-full hover:shadow-lg transition duration-300 font-medium">
+          Back to Home
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Resume Preview -->
+  <section class="py-20">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-12">
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          Your <span class="bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">AI-Powered Resume</span>
+        </h1>
+        <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+          Here’s your professionally crafted resume. Download it now and start landing interviews!
+        </p>
+      </div>
+
+      <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+        <!-- Error Message -->
+        {% if error %}
+          <div class="mb-8 p-4 bg-red-100 text-red-700 rounded-lg">
+            <p>{{ error }}</p>
+          </div>
+        {% endif %}
+
+        <!-- Personal Information -->
+        <div class="mb-8">
+          <h2 class="text-2xl font-semibold text-gray-900 mb-4">{{ name }}</h2>
+          {% if state and country %}
+            <p class="text-gray-600">{{ state }}, {{ country }}</p>
+          {% elif state %}
+            <p class="text-gray-600">{{ state }}</p>
+          {% elif country %}
+            <p class="text-gray-600">{{ country }}</p>
+          {% endif %}
+          <p class="text-gray-600">{{ email }}</p>
+          {% if phone %}
+            <p class="text-gray-600">{{ phone }}</p>
+          {% endif %}
+          {% if linkedin %}
+            <p class="text-gray-600"><a href="{{ linkedin }}" class="text-blue-500 hover:underline">{{ linkedin }}</a></p>
+          {% endif %}
+        </div>
+
+        <!-- Skills -->
+        {% if skills %}
+          <div class="mb-8">
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">Skills</h3>
+            <div class="flex flex-wrap gap-2">
+              {% for skill in skills %}
+                <span class="bg-purple-100 text-purple-600 px-3 py-1 rounded-full text-sm">{{ skill }}</span>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+
+        <!-- Education -->
+        {% if education %}
+          <div class="mb-8">
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">Education</h3>
+            {% for edu in education %}
+              <div class="mb-4">
+                <p class="font-medium text-gray-800">{{ edu.degree }} - {{ edu.institution }}</p>
+                <p class="text-gray-600">{{ edu.start_year }} - {{ edu.end_year }}</p>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <!-- Experience -->
+        {% if experience %}
+          <div class="mb-8">
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">Work Experience</h3>
+            {% for exp in experience %}
+              <div class="mb-4">
+                <p class="font-medium text-gray-800">{{ exp.job_title }} - {{ exp.company }}</p>
+                <p class="text-gray-600">{{ exp.start_date }} - {{ exp.end_date }}</p>
+                {% if exp.description != "Description not provided." %}
+                  <ul class="experience-bullets mt-2">
+                    {% for point in exp.description.split('\n') %}
+                      {% if point.strip() %}
+                        <li>{{ point.lstrip('• ').strip() }}</li>
+                      {% endif %}
+                    {% endfor %}
+                  </ul>
+                {% else %}
+                  <p class="text-gray-600 mt-2">{{ exp.description }}</p>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <!-- Download Resume Button with Template Selection -->
+        <div class="text-center mb-8">
+          <form method="POST" action="/download_resume" class="space-y-4">
+            <input type="hidden" name="name" value="{{ name }}">
+            <input type="hidden" name="email" value="{{ email }}">
+            <input type="hidden" name="phone" value="{{ phone }}">
+            <input type="hidden" name="state" value="{{ state }}">
+            <input type="hidden" name="country" value="{{ country }}">
+            <input type="hidden" name="linkedin" value="{{ linkedin }}">
+
+            {% for skill in skills %}
+              <input type="hidden" name="skills[]" value="{{ skill }}">
+            {% endfor %}
+
+            {% for edu in education %}
+              <input type="hidden" name="education_degree[]" value="{{ edu.degree }}">
+              <input type="hidden" name="education_institution[]" value="{{ edu.institution }}">
+              <input type="hidden" name="education_start_year[]" value="{{ edu.start_year }}">
+              <input type="hidden" name="education_end_year[]" value="{{ edu.end_year }}">
+            {% endfor %}
+
+            {% for exp in experience %}
+              <input type="hidden" name="experience_job_title[]" value="{{ exp.job_title }}">
+              <input type="hidden" name="experience_company[]" value="{{ exp.company }}">
+              <input type="hidden" name="experience_start_date[]" value="{{ exp.start_date }}">
+              <input type="hidden" name="experience_end_date[]" value="{{ exp.end_date }}">
+              <input type="hidden" name="experience_description[]" value="{{ exp.description }}">
+            {% endfor %}
+
+            <div>
+              <label for="template" class="block text-gray-700 font-medium mb-2">Select Resume Template</label>
+              <select name="template" id="template" class="w-full max-w-xs px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <option value="modern">Modern</option>
+                <option value="classic">Classic</option>
+                <option value="minimalist">Minimalist</option>
+                <option value="creative">Creative</option>
+                <option value="professional">Professional</option>
+              </select>
+            </div>
+
+            <button type="submit" class="bg-gradient-to-r from-purple-600 to-blue-500 text-white px-8 py-4 rounded-xl hover:shadow-lg transition duration-300 text-lg font-medium">
+              Download Resume as PDF
+            </button>
+          </form>
+        </div>
+
+        <!-- Cover Letter Generation -->
+        <div class="mb-8">
+          <h3 class="text-xl font-semibold text-gray-900 mb-4">Generate a Cover Letter</h3>
+          <form method="POST" action="/generate_cover_letter" class="space-y-4">
+            <input type="hidden" name="name" value="{{ name }}">
+            <input type="hidden" name="email" value="{{ email }}">
+            <input type="hidden" name="phone" value="{{ phone }}">
+            <input type="hidden" name="state" value="{{ state }}">
+            <input type="hidden" name="country" value="{{ country }}">
+            <input type="hidden" name="linkedin" value="{{ linkedin }}">
+
+            {% for skill in skills %}
+              <input type="hidden" name="skills[]" value="{{ skill }}">
+            {% endfor %}
+
+            {% for edu in education %}
+              <input type="hidden" name="education_degree[]" value="{{ edu.degree }}">
+              <input type="hidden" name="education_institution[]" value="{{ edu.institution }}">
+              <input type="hidden" name="education_start_year[]" value="{{ edu.start_year }}">
+              <input type="hidden" name="education_end_year[]" value="{{ edu.end_year }}">
+            {% endfor %}
+
+            {% for exp in experience %}
+              <input type="hidden" name="experience_job_title[]" value="{{ exp.job_title }}">
+              <input type="hidden" name="experience_company[]" value="{{ exp.company }}">
+              <input type="hidden" name="experience_start_date[]" value="{{ exp.start_date }}">
+              <input type="hidden" name="experience_end_date[]" value="{{ exp.end_date }}">
+              <input type="hidden" name="experience_description[]" value="{{ exp.description }}">
+            {% endfor %}
+
+            <div>
+              <label for="job_title" class="block text-gray-700 font-medium mb-2">Job Title</label>
+              <input type="text" name="job_title" id="job_title" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="e.g., Product Designer" required>
+            </div>
+            <div>
+              <label for="company" class="block text-gray-700 font-medium mb-2">Company</label>
+              <input type="text" name="company" id="company" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="e.g., TechCorp" required>
+            </div>
+            <button type="submit" class="bg-gradient-to-r from-purple-600 to-blue-500 text-white px-8 py-4 rounded-xl hover:shadow-lg transition duration-300 text-lg font-medium">
+              Generate Cover Letter
+            </button>
+          </form>
+        </div>
+
+        <!-- Cover Letter Display -->
+        {% if cover_letter %}
+          <div class="mb-8">
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">Your Cover Letter for {{ job_title }} at {{ company }}</h3>
+            <div class="p-4 bg-gray-50 rounded-lg">
+              <p class="text-gray-600 whitespace-pre-wrap">{{ cover_letter }}</p>
+            </div>
+            <div class="text-center mt-4">
+              <form method="POST" action="/download_cover_letter">
+                <input type="hidden" name="name" value="{{ name }}">
+                <input type="hidden" name="state" value="{{ state }}">
+                <input type="hidden" name="country" value="{{ country }}">
+                <input type="hidden" name="cover_letter" value="{{ cover_letter }}">
+                <button type="submit" class="bg-gradient-to-r from-purple-600 to-blue-500 text-white px-8 py-4 rounded-xl hover:shadow-lg transition duration-300 text-lg font-medium">
+                  Download Cover Letter as PDF
+                </button>
+              </form>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-gray-300 py-12">
+    <div class="container mx-auto px-4 text-center">
+      <p class="text-sm">© 2025 ResumeAI. All rights reserved.</p>
+    </div>
+  </footer>
+</body>
+</html>
