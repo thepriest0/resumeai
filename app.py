@@ -197,9 +197,15 @@ def generate_pdf(name, job_title, email, phone, state, country, linkedin, skills
                         if y_position < margin:
                             p.showPage()
                             y_position = height - margin
+                            # Reapply font settings after page break
+                            if font == "Times-Roman" and color == colors.black:
+                                p.setFont("Times-Roman", font_size)
+                            else:
+                                p.setFont(font, font_size)
+                            p.setFillColor(color)
                     y_position -= 4
 
-        def draw_wrapped_text(text, font_size, x_start, y_start, max_width=width - 2 * margin, font="Helvetica", color=colors.black, bold=False):
+        def draw_wrapped_text(text, font_size, x_start, y_start, max_width=width - 2 * margin, font="Helvetica", color=colors.black, bold=False, underline=False):
             nonlocal y_position
             y_position = y_start
             if font == "Times-Roman" and bold:
@@ -224,10 +230,26 @@ def generate_pdf(name, job_title, email, phone, state, country, linkedin, skills
 
             for line in lines:
                 p.drawString(x_start, y_position, line)
+                if underline:
+                    line_width = p.stringWidth(line, font if not bold else f"{font}-Bold", font_size)
+                    d = Drawing(width, 20)
+                    line = Line(x_start, y_position - 2, x_start + line_width, y_position - 2)
+                    line.strokeColor = color
+                    line.strokeWidth = 1
+                    d.add(line)
+                    renderPDF.draw(d, p, 0, 0)
                 y_position -= 14
                 if y_position < margin:
                     p.showPage()
                     y_position = height - margin
+                    # Reapply font settings after page break
+                    if font == "Times-Roman" and bold:
+                        p.setFont("Times-Bold", font_size)
+                    elif font == "Helvetica" and bold:
+                        p.setFont("Helvetica-Bold", font_size)
+                    else:
+                        p.setFont(font, font_size)
+                    p.setFillColor(color)
 
         def wrap_text(text, font, font_size, max_width):
             p.setFont(font, font_size)
@@ -287,7 +309,7 @@ def generate_pdf(name, job_title, email, phone, state, country, linkedin, skills
                 draw_wrapped_text(phone, 10, margin, y_position, max_width=width - 2 * margin, color=colors.grey)
                 y_position -= 14
             if linkedin:
-                draw_wrapped_text(linkedin, 10, margin, y_position, max_width=width - 2 * margin, color=colors.grey)
+                draw_wrapped_text(linkedin, 10, margin, y_position, max_width=width - 2 * margin, color=HexColor("#0000FF"), underline=True)
                 y_position -= 20
             if skills:
                 draw_text("Skills", margin, y_position, 14, bold=True, color=HexColor("#4B0082"))
@@ -313,13 +335,14 @@ def generate_pdf(name, job_title, email, phone, state, country, linkedin, skills
                 draw_section_divider(margin, width - margin, y_position, HexColor("#4B0082"), HexColor("#00CED1"))
                 y_position -= 10
                 for exp in experience:
-                    draw_wrapped_text(f"{exp['job_title']} - {exp['company']}", 12, margin, y_position, max_width=width - 2 * margin, bold=True)
-                    y_position -= 14
-                    draw_wrapped_text(f"{exp['start_date']} - {exp['end_date']}", 10, margin, y_position, max_width=width - 2 * margin, color=colors.grey)
-                    y_position -= 14
-                    if exp['description'].strip():
-                        draw_bullet_text(exp['description'].strip(), 10, y_start=y_position, x_start=margin, max_width=width - 2 * margin)
-                    y_position -= 20
+                    if exp['job_title'] and exp['company']:
+                        draw_wrapped_text(f"{exp['job_title']} - {exp['company']}", 12, margin, y_position, max_width=width - 2 * margin, bold=True)
+                        y_position -= 14
+                        draw_wrapped_text(f"{exp['start_date']} - {exp['end_date']}", 10, margin, y_position, max_width=width - 2 * margin, color=colors.grey)
+                        y_position -= 14
+                        if exp.get('description', '').strip():
+                            draw_bullet_text(exp['description'].strip(), 10, y_start=y_position, x_start=margin, max_width=width - 2 * margin)
+                        y_position -= 20
 
         elif template == "classic":
             lines = wrap_text(name, "Times-Bold", 18, width - 2 * margin)
@@ -340,7 +363,7 @@ def generate_pdf(name, job_title, email, phone, state, country, linkedin, skills
                 draw_wrapped_text(phone, 10, margin, y_position, max_width=width - 2 * margin, font="Times-Roman")
                 y_position -= 14
             if linkedin:
-                draw_wrapped_text(linkedin, 10, margin, y_position, max_width=width - 2 * margin, font="Times-Roman")
+                draw_wrapped_text(linkedin, 10, margin, y_position, max_width=width - 2 * margin, font="Times-Roman", color=HexColor("#0000FF"), underline=True)
                 y_position -= 20
             if skills:
                 draw_text("Skills", margin, y_position, 14, "Times-Roman", bold=True)
@@ -366,13 +389,14 @@ def generate_pdf(name, job_title, email, phone, state, country, linkedin, skills
                 draw_section_divider(margin, width - margin, y_position, colors.black)
                 y_position -= 10
                 for exp in experience:
-                    draw_wrapped_text(f"{exp['job_title']} - {exp['company']}", 12, margin, y_position, max_width=width - 2 * margin, font="Times-Roman", bold=True)
-                    y_position -= 14
-                    draw_wrapped_text(f"{exp['start_date']} - {exp['end_date']}", 10, margin, y_position, max_width=width - 2 * margin, font="Times-Roman")
-                    y_position -= 14
-                    if exp['description'].strip():
-                        draw_bullet_text(exp['description'].strip(), 10, y_start=y_position, font="Times-Roman", x_start=margin, max_width=width - 2 * margin)
-                    y_position -= 20
+                    if exp['job_title'] and exp['company']:
+                        draw_wrapped_text(f"{exp['job_title']} - {exp['company']}", 12, margin, y_position, max_width=width - 2 * margin, font="Times-Roman", bold=True)
+                        y_position -= 14
+                        draw_wrapped_text(f"{exp['start_date']} - {exp['end_date']}", 10, margin, y_position, max_width=width - 2 * margin, font="Times-Roman")
+                        y_position -= 14
+                        if exp.get('description', '').strip():
+                            draw_bullet_text(exp['description'].strip(), 10, y_start=y_position, font="Times-Roman", x_start=margin, max_width=width - 2 * margin)
+                        y_position -= 20
 
         elif template == "minimalist":
             lines = wrap_text(name, "Helvetica-Bold", 16, width - 2 * margin)
@@ -393,7 +417,7 @@ def generate_pdf(name, job_title, email, phone, state, country, linkedin, skills
                 draw_wrapped_text(phone, 10, margin, y_position, max_width=width - 2 * margin, color=colors.grey)
                 y_position -= 14
             if linkedin:
-                draw_wrapped_text(linkedin, 10, margin, y_position, max_width=width - 2 * margin, color=colors.grey)
+                draw_wrapped_text(linkedin, 10, margin, y_position, max_width=width - 2 * margin, color=HexColor("#0000FF"), underline=True)
                 y_position -= 20
             if skills:
                 draw_text("Skills", margin, y_position, 12, bold=True)
@@ -437,7 +461,7 @@ def generate_pdf(name, job_title, email, phone, state, country, linkedin, skills
                 y_position -= 20
 
             if linkedin:
-                draw_wrapped_text(linkedin, 10, main_content_x, y_position, max_width=main_content_width)
+                draw_wrapped_text(linkedin, 10, main_content_x, y_position, max_width=main_content_width, color=HexColor("#0000FF"), underline=True)
                 y_position -= 14
             if email:
                 draw_wrapped_text(email, 10, main_content_x, y_position, max_width=main_content_width)
@@ -513,7 +537,7 @@ def generate_pdf(name, job_title, email, phone, state, country, linkedin, skills
                 draw_wrapped_text(phone, 9, 0.5 * inch, sidebar_y, max_width=sidebar_width - margin)
                 sidebar_y = y_position - 14
             if linkedin:
-                draw_wrapped_text(linkedin, 9, 0.5 * inch, sidebar_y, max_width=sidebar_width - margin)
+                draw_wrapped_text(linkedin, 9, 0.5 * inch, sidebar_y, max_width=sidebar_width - margin, color=HexColor("#0000FF"), underline=True)
                 sidebar_y = y_position - 20
             if skills:
                 draw_text("Skills", 0.5 * inch, sidebar_y, 12, bold=True, color=HexColor("#4682B4"))
