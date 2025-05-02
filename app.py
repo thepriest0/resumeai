@@ -22,7 +22,15 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 app = Flask(__name__)
-CORS(app, resources={r"/preview_resume": {"origins": "*"}})  # Enable CORS for preview_resume route
+# Enable CORS for all routes, specifically allowing necessary headers and methods
+CORS(app, resources={
+    r"/preview_resume": {
+        "origins": "*",
+        "methods": ["POST"],
+        "allow_headers": ["Content-Type", "Authorization"],
+        "expose_headers": ["Content-Disposition", "Content-Type"]
+    }
+})
 
 # ----------------- GPT API CALL ------------------
 
@@ -825,12 +833,17 @@ def preview_resume():
             logger.error("PDF data is empty")
             return Response("Error: Generated PDF is empty", status=500, mimetype='text/plain')
 
+        # Set headers to allow iframe embedding and proper CORS
         headers = {
             'Content-Type': 'application/pdf',
             'Content-Disposition': 'inline; filename=preview.pdf',
             'Cache-Control': 'no-cache, no-store, must-revalidate',
             'Pragma': 'no-cache',
-            'Expires': '0'
+            'Expires': '0',
+            'Access-Control-Allow-Origin': '*',  # Allow all origins
+            'Access-Control-Allow-Methods': 'POST',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+            'X-Frame-Options': 'ALLOWALL'  # Allow iframe embedding
         }
         return Response(pdf_data, mimetype='application/pdf', headers=headers)
     except Exception as e:
