@@ -240,40 +240,35 @@
             <div>
               <label for="template" class="block text-gray-700 font-medium mb-2">Select Resume Template</label>
               <div class="template-cards">
-                <div class="template-card">
+                <div class="template-card" data-template="modern">
                   <input type="radio" id="modern" name="template" value="modern" checked>
                   <label for="modern">Modern</label>
                   <div class="preview">Colored header, gradient dividers, modern typography</div>
-                  <button type="button" class="preview-btn bg-gray-200 text-gray-700 px-3 py-1 rounded-lg text-sm" data-template="modern">Preview</button>
                 </div>
-                <div class="template-card">
+                <div class="template-card" data-template="classic">
                   <input type="radio" id="classic" name="template" value="classic">
                   <label for="classic">Classic</label>
                   <div class="preview">Black-and-white, formal Times font, simple dividers</div>
-                  <button type="button" class="preview-btn bg-gray-200 text-gray-700 px-3 py-1 rounded-lg text-sm" data-template="classic">Preview</button>
                 </div>
-                <div class="template-card">
+                <div class="template-card" data-template="minimalist">
                   <input type="radio" id="minimalist" name="template" value="minimalist">
                   <label for="minimalist">Minimalist</label>
                   <div class="preview">Subtle borders, minimal styling, content-focused</div>
-                  <button type="button" class="preview-btn bg-gray-200 text-gray-700 px-3 py-1 rounded-lg text-sm" data-template="minimalist">Preview</button>
                 </div>
-                <div class="template-card">
+                <div class="template-card" data-template="creative">
                   <input type="radio" id="creative" name="template" value="creative">
                   <label for="creative">Creative</label>
                   <div class="preview">Sidebar layout, bold colors, playful typography</div>
-                  <button type="button" class="preview-btn bg-gray-200 text-gray-700 px-3 py-1 rounded-lg text-sm" data-template="creative">Preview</button>
                 </div>
-                <div class="template-card">
+                <div class="template-card" data-template="professional">
                   <input type="radio" id="professional" name="template" value="professional">
                   <label for="professional">Professional</label>
                   <div class="preview">Two-column layout, blue accents, structured design</div>
-                  <button type="button" class="preview-btn bg-gray-200 text-gray-700 px-3 py-1 rounded-lg text-sm" data-template="professional">Preview</button>
                 </div>
               </div>
             </div>
 
-            <div id="preview-container" class="hidden">
+            <div id="preview-container">
               <h3 class="text-lg font-semibold text-gray-900 mb-2">Preview</h3>
               <iframe id="pdf-preview"></iframe>
             </div>
@@ -371,14 +366,17 @@
   <!-- JavaScript for PDF Preview -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const previewButtons = document.querySelectorAll('.preview-btn');
+      const templateCards = document.querySelectorAll('.template-card');
       const previewContainer = document.getElementById('preview-container');
       const pdfPreview = document.getElementById('pdf-preview');
       const downloadForm = document.getElementById('download-form');
 
-      previewButtons.forEach(button => {
-        button.addEventListener('click', () => {
-          const template = button.getAttribute('data-template');
+      templateCards.forEach(card => {
+        card.addEventListener('click', (e) => {
+          const template = card.getAttribute('data-template');
+          const radio = card.querySelector('input[type="radio"]');
+          radio.checked = true;
+
           const formData = new FormData(downloadForm);
           formData.set('template', template);
 
@@ -386,14 +384,52 @@
             method: 'POST',
             body: formData
           })
-          .then(response => response.blob())
+          .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.blob();
+          })
           .then(blob => {
             const url = URL.createObjectURL(blob);
             pdfPreview.src = url;
-            previewContainer.classList.remove('hidden');
+            previewContainer.style.display = 'block';
           })
-          .catch(error => console.error('Error previewing PDF:', error));
+          .catch(error => {
+            console.error('Error previewing PDF:', error);
+            pdfPreview.src = '';
+            previewContainer.style.display = 'block'; // Keep container visible for error message
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'p-4 bg-red-100 text-red-700 rounded-lg mt-2';
+            errorDiv.textContent = 'Failed to load preview. Check server logs or try again.';
+            previewContainer.appendChild(errorDiv);
+          });
         });
+      });
+
+      // Initial preview load with default template
+      const initialTemplate = document.querySelector('input[name="template"]:checked').value;
+      const initialFormData = new FormData(downloadForm);
+      initialFormData.set('template', initialTemplate);
+      fetch('/preview_resume', {
+        method: 'POST',
+        body: initialFormData
+      })
+      .then(response => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.blob();
+      })
+      .then(blob => {
+        const url = URL.createObjectURL(blob);
+        pdfPreview.src = url;
+        previewContainer.style.display = 'block';
+      })
+      .catch(error => {
+        console.error('Error loading initial preview:', error);
+        pdfPreview.src = '';
+        previewContainer.style.display = 'block';
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'p-4 bg-red-100 text-red-700 rounded-lg mt-2';
+        errorDiv.textContent = 'Failed to load initial preview. Check server logs or try again.';
+        previewContainer.appendChild(errorDiv);
       });
     });
   </script>
