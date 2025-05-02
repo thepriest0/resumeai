@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, send_file, Response
+from flask import Flask, render_template, request, redirect, url_for, send_file, Response, jsonify
 import requests
 import io
 from reportlab.lib.pagesizes import letter
@@ -25,8 +25,8 @@ app = Flask(__name__)
 # Enable CORS for all routes, specifically allowing necessary headers and methods
 CORS(app, resources={
     r"/preview_resume": {
-        "origins": "*",
-        "methods": ["POST"],
+        "origins": ["http://localhost:5000", "https://*.onrender.com"],
+        "methods": ["GET", "POST"],
         "allow_headers": ["Content-Type", "Authorization"],
         "expose_headers": ["Content-Disposition", "Content-Type"]
     }
@@ -831,24 +831,16 @@ def preview_resume():
 
         if not pdf_data:
             logger.error("PDF data is empty")
-            return Response("Error: Generated PDF is empty", status=500, mimetype='text/plain')
+            return jsonify({'error': 'Generated PDF is empty'}), 500
 
-        # Set headers to allow iframe embedding and proper CORS
-        headers = {
-            'Content-Type': 'application/pdf',
-            'Content-Disposition': 'inline; filename=preview.pdf',
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0',
-            'Access-Control-Allow-Origin': '*',  # Allow all origins
-            'Access-Control-Allow-Methods': 'POST',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-            'X-Frame-Options': 'ALLOWALL'  # Allow iframe embedding
-        }
-        return Response(pdf_data, mimetype='application/pdf', headers=headers)
+        response = Response(pdf_data, mimetype='application/pdf')
+        response.headers['Content-Disposition'] = 'inline; filename=preview.pdf'
+        response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response
     except Exception as e:
         logger.error(f"Error in preview_resume: {e}")
-        return Response(f"Error generating preview: {str(e)}", status=500, mimetype='text/plain')
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/download_resume', methods=['POST'])
 def download_resume():
