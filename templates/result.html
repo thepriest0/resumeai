@@ -91,6 +91,92 @@
       border-radius: 0.5rem;
     }
   </style>
+  <script defer>
+    document.addEventListener('DOMContentLoaded', () => {
+      const templateCards = document.querySelectorAll('.template-card');
+      const previewContainer = document.getElementById('preview-container');
+      const pdfPreview = document.getElementById('pdf-preview');
+      const downloadForm = document.getElementById('download-form');
+
+      if (!previewContainer || !pdfPreview || !downloadForm) {
+        console.error('Required elements not found');
+        return;
+      }
+
+      templateCards.forEach(card => {
+        card.addEventListener('click', (e) => {
+          const template = card.getAttribute('data-template');
+          const radio = card.querySelector('input[type="radio"]');
+          if (radio) {
+            radio.checked = true;
+            const formData = new FormData(downloadForm);
+            formData.set('template', template);
+
+            fetch('/preview_resume', {
+              method: 'POST',
+              body: formData
+            })
+            .then(response => {
+              if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+              return response.blob();
+            })
+            .then(blob => {
+              const url = URL.createObjectURL(blob);
+              pdfPreview.src = url;
+              previewContainer.style.display = 'block';
+              // Clear any previous error messages
+              const errorDiv = previewContainer.querySelector('.bg-red-100');
+              if (errorDiv) errorDiv.remove();
+            })
+            .catch(error => {
+              console.error('Error previewing PDF:', error);
+              pdfPreview.src = '';
+              previewContainer.style.display = 'block';
+              let errorDiv = previewContainer.querySelector('.bg-red-100');
+              if (!errorDiv) {
+                errorDiv = document.createElement('div');
+                errorDiv.className = 'p-4 bg-red-100 text-red-700 rounded-lg mt-2';
+                previewContainer.appendChild(errorDiv);
+              }
+              errorDiv.textContent = 'Failed to load preview. Check server logs or try again. Error: ' + error.message;
+            });
+          }
+        });
+      });
+
+      // Initial preview load with default template
+      const initialTemplate = document.querySelector('input[name="template"]:checked')?.value || 'modern';
+      const initialFormData = new FormData(downloadForm);
+      initialFormData.set('template', initialTemplate);
+      fetch('/preview_resume', {
+        method: 'POST',
+        body: initialFormData
+      })
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return response.blob();
+      })
+      .then(blob => {
+        const url = URL.createObjectURL(blob);
+        pdfPreview.src = url;
+        previewContainer.style.display = 'block';
+        const errorDiv = previewContainer.querySelector('.bg-red-100');
+        if (errorDiv) errorDiv.remove();
+      })
+      .catch(error => {
+        console.error('Error loading initial preview:', error);
+        pdfPreview.src = '';
+        previewContainer.style.display = 'block';
+        let errorDiv = previewContainer.querySelector('.bg-red-100');
+        if (!errorDiv) {
+          errorDiv = document.createElement('div');
+          errorDiv.className = 'p-4 bg-red-100 text-red-700 rounded-lg mt-2';
+          previewContainer.appendChild(errorDiv);
+        }
+        errorDiv.textContent = 'Failed to load initial preview. Check server logs or try again. Error: ' + error.message;
+      });
+    });
+  </script>
 </head>
 <body class="min-h-screen font-sans bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-50">
   <!-- Header -->
@@ -362,76 +448,5 @@
       </div>
     </div>
   </section>
-
-  <!-- JavaScript for PDF Preview -->
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const templateCards = document.querySelectorAll('.template-card');
-      const previewContainer = document.getElementById('preview-container');
-      const pdfPreview = document.getElementById('pdf-preview');
-      const downloadForm = document.getElementById('download-form');
-
-      templateCards.forEach(card => {
-        card.addEventListener('click', (e) => {
-          const template = card.getAttribute('data-template');
-          const radio = card.querySelector('input[type="radio"]');
-          radio.checked = true;
-
-          const formData = new FormData(downloadForm);
-          formData.set('template', template);
-
-          fetch('/preview_resume', {
-            method: 'POST',
-            body: formData
-          })
-          .then(response => {
-            if (!response.ok) throw new Error('Network response was not ok');
-            return response.blob();
-          })
-          .then(blob => {
-            const url = URL.createObjectURL(blob);
-            pdfPreview.src = url;
-            previewContainer.style.display = 'block';
-          })
-          .catch(error => {
-            console.error('Error previewing PDF:', error);
-            pdfPreview.src = '';
-            previewContainer.style.display = 'block'; // Keep container visible for error message
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'p-4 bg-red-100 text-red-700 rounded-lg mt-2';
-            errorDiv.textContent = 'Failed to load preview. Check server logs or try again.';
-            previewContainer.appendChild(errorDiv);
-          });
-        });
-      });
-
-      // Initial preview load with default template
-      const initialTemplate = document.querySelector('input[name="template"]:checked').value;
-      const initialFormData = new FormData(downloadForm);
-      initialFormData.set('template', initialTemplate);
-      fetch('/preview_resume', {
-        method: 'POST',
-        body: initialFormData
-      })
-      .then(response => {
-        if (!response.ok) throw new Error('Network response was not ok');
-        return response.blob();
-      })
-      .then(blob => {
-        const url = URL.createObjectURL(blob);
-        pdfPreview.src = url;
-        previewContainer.style.display = 'block';
-      })
-      .catch(error => {
-        console.error('Error loading initial preview:', error);
-        pdfPreview.src = '';
-        previewContainer.style.display = 'block';
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'p-4 bg-red-100 text-red-700 rounded-lg mt-2';
-        errorDiv.textContent = 'Failed to load initial preview. Check server logs or try again.';
-        previewContainer.appendChild(errorDiv);
-      });
-    });
-  </script>
 </body>
 </html>
