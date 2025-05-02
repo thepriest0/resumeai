@@ -33,7 +33,7 @@
     .from-indigo-600 { --tw-gradient-from: #4f46e5; }
     .from-blue-600 { --tw-gradient-from: #2563eb; }
     .from-purple-400 { --tw-gradient-from: #c084fc; }
-    .from-blue-400 { --tw-gradient-from: #60a5fa; }
+    .from-blue-400 { --tw-gradient-to: #60a5fa; }
     .from-green-500 { --tw-gradient-from: #10b981; }
     .to-blue-500 { --tw-gradient-to: #3b82f6; }
     .to-blue-400 { --tw-gradient-to: #60a5fa; }
@@ -163,7 +163,7 @@
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1">Country</label>
-                  <input type="text" name="country" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" placeholder="e.g., United States" value="{{ country if state else '' }}">
+                  <input type="text" name="country" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" placeholder="e.g., United States" value="{{ country if country else '' }}">
                 </div>
               </div>
               <div>
@@ -289,8 +289,8 @@
                       <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
                         <textarea name="description[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" rows="4" placeholder="Describe your responsibilities and achievements">
-{% if exp.description != "Description not provided." %}
-{{ exp.description.split('\n') | map('lstrip', '• ') | map('strip') | select | join(' ') }}
+{% if exp.description %}
+  {{ exp.description | safe if exp.description != "Description not provided." else "" }}
 {% endif %}
                         </textarea>
                       </div>
@@ -576,8 +576,32 @@
         return;
       }
 
+      // Collect form data for debugging
+      const formData = new FormData(document.getElementById('resume-form'));
+      let dataLog = 'Form Data:\n';
+      for (let [key, value] of formData.entries()) {
+        dataLog += `${key}: ${value}\n`;
+      }
+      console.log(dataLog);
+
       // Submit the form
-      document.getElementById('resume-form').submit();
+      fetch('/form', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.text();
+      })
+      .then(html => {
+        document.body.innerHTML = html; // Replace the page content with the response
+      })
+      .catch(error => {
+        console.error('Error submitting form:', error);
+        alert('An error occurred while submitting the form. Check the console for details.');
+      });
     }
   </script>
 </body>

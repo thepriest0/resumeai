@@ -264,9 +264,8 @@ def generate_pdf(name, job_title, email, phone, state, country, linkedin, skills
                 y_position -= 14
                 bullet_points = exp['description'].split("\n")
                 for point in bullet_points:
-                    point = point.lstrip("• ").strip()
-                    if point:
-                        draw_bullet_text(point, 10, y_start=y_position)
+                    if point.strip():
+                        draw_bullet_text(point.strip(), 10, y_start=y_position)
                 y_position -= 20
 
     elif template == "classic":
@@ -317,9 +316,8 @@ def generate_pdf(name, job_title, email, phone, state, country, linkedin, skills
                 y_position -= 14
                 bullet_points = exp['description'].split("\n")
                 for point in bullet_points:
-                    point = point.lstrip("• ").strip()
-                    if point:
-                        draw_bullet_text(point, 10, y_start=y_position, font="Times-Roman")
+                    if point.strip():
+                        draw_bullet_text(point.strip(), 10, y_start=y_position, font="Times-Roman")
                 y_position -= 20
 
     elif template == "minimalist":
@@ -364,9 +362,8 @@ def generate_pdf(name, job_title, email, phone, state, country, linkedin, skills
                 y_position -= 14
                 bullet_points = exp['description'].split("\n")
                 for point in bullet_points:
-                    point = point.lstrip("• ").strip()
-                    if point:
-                        draw_bullet_text(point, 10, y_start=y_position)
+                    if point.strip():
+                        draw_bullet_text(point.strip(), 10, y_start=y_position)
                 y_position -= 20
 
     elif template == "creative":
@@ -422,9 +419,8 @@ def generate_pdf(name, job_title, email, phone, state, country, linkedin, skills
                 y_position -= 14
                 bullet_points = exp['description'].split("\n")
                 for point in bullet_points:
-                    point = point.lstrip("• ").strip()
-                    if point:
-                        draw_bullet_text(point, 10, x_start=main_content_x, y_start=y_position, max_width=main_content_width)
+                    if point.strip():
+                        draw_bullet_text(point.strip(), 10, x_start=main_content_x, y_start=y_position, max_width=main_content_width)
                 y_position -= 20
 
     elif template == "professional":
@@ -482,10 +478,78 @@ def generate_pdf(name, job_title, email, phone, state, country, linkedin, skills
                 y_position -= 14
                 bullet_points = exp['description'].split("\n")
                 for point in bullet_points:
-                    point = point.lstrip("• ").strip()
-                    if point:
-                        draw_bullet_text(point, 10, x_start=main_content_x, y_start=y_position, max_width=main_content_width)
+                    if point.strip():
+                        draw_bullet_text(point.strip(), 10, x_start=main_content_x, y_start=y_position, max_width=main_content_width)
                 y_position -= 20
+
+    p.showPage()
+    p.save()
+    buffer.seek(0)
+    return buffer
+
+# Helper function to generate cover letter PDF
+def generate_cover_letter_pdf(name, state, country, cover_letter):
+    buffer = io.BytesIO()
+    p = canvas.Canvas(buffer, pagesize=letter)
+    width, height = letter
+
+    y_position = height - 0.75 * inch
+
+    def draw_text(text, x, y, font_size, font="Helvetica", bold=False, color=colors.black):
+        nonlocal y_position
+        if bold:
+            p.setFont(f"{font}-Bold", font_size)
+        else:
+            p.setFont(font, font_size)
+        p.setFillColor(color)
+        p.drawString(x, y, text)
+        y_position = y
+
+    def draw_wrapped_text(text, font_size, x_start, y_start, max_width=width - 2 * inch, font="Helvetica", color=colors.black):
+        nonlocal y_position
+        y_position = y_start
+        p.setFont(font, font_size)
+        p.setFillColor(color)
+        lines = []
+        words = text.split()
+        current_line = ""
+        for word in words:
+            test_line = f"{current_line} {word}".strip()
+            if p.stringWidth(test_line, font, font_size) <= max_width:
+                current_line = test_line
+            else:
+                lines.append(current_line)
+                current_line = word
+        if current_line:
+            lines.append(current_line)
+
+        for line in lines:
+            p.drawString(x_start, y_position, line)
+            y_position -= 14
+            if y_position < inch:
+                p.showPage()
+                y_position = height - inch
+
+    # Header: Name and Contact Info
+    draw_text(name, inch, y_position, 16, bold=True)
+    y_position -= 20
+    location = f"{state}, {country}" if state and country else (state or country or '')
+    if location:
+        draw_text(location, inch, y_position, 10, color=colors.grey)
+        y_position -= 14
+    y_position -= 20
+
+    # Current Date
+    current_date = datetime.now().strftime("%B %d, %Y")
+    draw_text(current_date, inch, y_position, 10)
+    y_position -= 30
+
+    # Recipient
+    draw_text("Hiring Manager", inch, y_position, 10)
+    y_position -= 30
+
+    # Cover Letter Content
+    draw_wrapped_text(cover_letter, 10, inch, y_position)
 
     p.showPage()
     p.save()
@@ -544,16 +608,17 @@ def form():
 
             for title, company, start, end, desc in zip(job_titles, companies, start_dates, end_dates, descriptions):
                 if title.strip() and company.strip():
-                    desc = desc.strip()
+                    raw_desc = desc.strip() or "Description not provided."
                     # Clean description by removing bullet points before processing
-                    raw_desc = re.sub(r'^[•\-\*]\s*', '', desc, flags=re.MULTILINE).strip()
-                    improved_desc = enhance_job_description(raw_desc) if raw_desc and raw_desc.lower() not in ["hatchnil", "latecharl"] else "Description not provided."
+                    clean_desc = re.sub(r'^[•\-\*]\s*', '', raw_desc, flags=re.MULTILINE).strip()
+                    improved_desc = enhance_job_description(clean_desc) if clean_desc and clean_desc.lower() not in ["hatchnil", "latecharl"] else "Description not provided."
                     experience.append({
                         'job_title': title.strip(),
                         'company': company.strip(),
                         'start_date': start.strip() or 'N/A',
                         'end_date': end.strip() or 'Present',
-                        'description': improved_desc
+                        'raw_description': raw_desc,  # Store the raw description
+                        'description': improved_desc  # Store the AI-enhanced description
                     })
 
             resume_data = {
@@ -584,36 +649,57 @@ def form():
             state = request.args.get('state', '')
             country = request.args.get('country', '')
             linkedin = request.args.get('linkedin', '')
+
+            # Ensure skills is a list
             skills = request.args.getlist('skills[]')
+            if not isinstance(skills, list):
+                skills = []
+
+            # Ensure education is a list of dictionaries
             education = []
-            for degree, institution, start, end in zip(
-                request.args.getlist('education_degree[]'),
-                request.args.getlist('education_institution[]'),
-                request.args.getlist('education_start_year[]'),
-                request.args.getlist('education_end_year[]')
-            ):
-                education.append({'degree': degree, 'institution': institution, 'start_year': start, 'end_year': end})
-            experience = []
-            for title, company, start, end, desc in zip(
-                request.args.getlist('experience_job_title[]'),
-                request.args.getlist('experience_company[]'),
-                request.args.getlist('experience_start_date[]'),
-                request.args.getlist('experience_end_date[]'),
-                request.args.getlist('experience_description[]')
-            ):
-                # Clean description by removing bullet points for the form
-                raw_desc = desc
-                if desc and desc != "Description not provided.":
-                    raw_desc = " ".join(point.lstrip("• ").strip() for point in desc.split("\n") if point.strip())
-                experience.append({
-                    'job_title': title,
-                    'company': company,
-                    'start_date': start,
-                    'end_date': end,
-                    'description': raw_desc
+            degrees = request.args.getlist('education_degree[]')
+            institutions = request.args.getlist('education_institution[]')
+            start_years = request.args.getlist('education_start_year[]')
+            end_years = request.args.getlist('education_end_year[]')
+
+            for degree, institution, start, end in zip(degrees, institutions, start_years, end_years):
+                education.append({
+                    'degree': degree or '',
+                    'institution': institution or '',
+                    'start_year': start or '',
+                    'end_year': end or ''
                 })
 
-            return render_template('form.html', name=name, job_title=job_title, email=email, phone=phone, state=state, country=country, linkedin=linkedin, skills=skills, education=education, experience=experience)
+            # Ensure experience is a list of dictionaries
+            experience = []
+            job_titles = request.args.getlist('experience_job_title[]')
+            companies = request.args.getlist('experience_company[]')
+            start_dates = request.args.getlist('experience_start_date[]')
+            end_dates = request.args.getlist('experience_end_date[]')
+            raw_descriptions = request.args.getlist('experience_raw_description[]')
+
+            for title, company, start, end, raw_desc in zip(
+                job_titles, companies, start_dates, end_dates, raw_descriptions
+            ):
+                experience.append({
+                    'job_title': title or '',
+                    'company': company or '',
+                    'start_date': start or '',
+                    'end_date': end or '',
+                    'description': raw_desc or ''  # Use raw_description for editing
+                })
+
+            return render_template('form.html', 
+                                 name=name, 
+                                 job_title=job_title, 
+                                 email=email, 
+                                 phone=phone, 
+                                 state=state, 
+                                 country=country, 
+                                 linkedin=linkedin, 
+                                 skills=skills, 
+                                 education=education, 
+                                 experience=experience)
 
         except Exception as e:
             return render_template('form.html', error=f"Failed to load edit form: {str(e)}")
@@ -769,17 +855,13 @@ def refresh_resume():
         # Rebuild experience and regenerate descriptions
         experience = []
         variation_seed = str(time.time())  # Use timestamp for variation
-        for title, company, start, end, desc in zip(
+        for title, company, start, end, raw_desc in zip(
             request.args.getlist('experience_job_title[]'),
             request.args.getlist('experience_company[]'),
             request.args.getlist('experience_start_date[]'),
             request.args.getlist('experience_end_date[]'),
-            request.args.getlist('experience_description[]')
+            request.args.getlist('experience_raw_description[]')  # Use raw description
         ):
-            # Strip bullet points from the description to get the raw input
-            raw_desc = desc
-            if desc and desc != "Description not provided.":
-                raw_desc = " ".join(point.lstrip("• ").strip() for point in desc.split("\n") if point.strip())
             # Regenerate the description using the raw input with a variation seed
             improved_desc = enhance_job_description(raw_desc, variation_seed=variation_seed) if raw_desc and raw_desc.lower() not in ["hatchnil", "latecharl"] else "Description not provided."
             experience.append({
@@ -787,6 +869,7 @@ def refresh_resume():
                 'company': company,
                 'start_date': start,
                 'end_date': end,
+                'raw_description': raw_desc,
                 'description': improved_desc
             })
 
@@ -833,16 +916,18 @@ def generate_cover_letter_route():
         experience = []
         job_titles = request.form.getlist('experience_job_title[]')
         companies = request.form.getlist('experience_company[]')
-        start_dates = request.form.getlist('start_date[]')
-        end_dates = request.form.getlist('end_date[]')
+        start_dates = request.form.getlist('experience_start_date[]')
+        end_dates = request.form.getlist('experience_end_date[]')
         descriptions = request.form.getlist('experience_description[]')
+        raw_descriptions = request.form.getlist('experience_raw_description[]')
 
-        for title, company, start, end, desc in zip(job_titles, companies, start_dates, end_dates, descriptions):
+        for title, company, start, end, desc, raw_desc in zip(job_titles, companies, start_dates, end_dates, descriptions, raw_descriptions or [None] * len(job_titles)):
             experience.append({
                 'job_title': title,
                 'company': company,
                 'start_date': start,
                 'end_date': end,
+                'raw_description': raw_desc if raw_desc else desc,
                 'description': desc
             })
 
@@ -896,16 +981,33 @@ def refresh_cover_letter():
             request.args.getlist('education_start_year[]'),
             request.args.getlist('education_end_year[]')
         ):
-            education.append({'degree': degree, 'institution': institution, 'start_year': start, 'end_year': end})
+            education.append({
+                'degree': degree,
+                'institution': institution,
+                'start_year': start,
+                'end_year': end
+            })
+
         experience = []
-        for title, company, start, end, desc in zip(
-            request.args.getlist('experience_job_title[]'),
-            request.args.getlist('experience_company[]'),
-            request.args.getlist('experience_start_date[]'),
-            request.args.getlist('experience_end_date[]'),
-            request.args.getlist('experience_description[]')
+        job_titles = request.args.getlist('experience_job_title[]')
+        companies = request.args.getlist('experience_company[]')
+        start_dates = request.args.getlist('experience_start_date[]')
+        end_dates = request.args.getlist('experience_end_date[]')
+        descriptions = request.args.getlist('experience_description[]')
+        raw_descriptions = request.args.getlist('experience_raw_description[]')
+
+        for title, company, start, end, desc, raw_desc in zip(
+            job_titles, companies, start_dates, end_dates, descriptions, raw_descriptions
         ):
-            experience.append({'job_title': title, 'company': company, 'start_date': start, 'end_date': end, 'description': desc})
+            experience.append({
+                'job_title': title,
+                'company': company,
+                'start_date': start,
+                'end_date': end,
+                'raw_description': raw_desc if raw_desc else desc,
+                'description': desc
+            })
+
         cover_job_title = request.args.get('cover_job_title', 'Job Title')
         company = request.args.get('company', 'Company')
 
@@ -922,8 +1024,7 @@ def refresh_cover_letter():
             'experience': experience
         }
 
-        # Regenerate the cover letter with a variation seed
-        variation_seed = str(time.time())
+        variation_seed = str(time.time())  # Use timestamp for variation
         cover_letter = generate_cover_letter(resume_data, cover_job_title, company, variation_seed=variation_seed)
         return render_template('result.html', **resume_data, cover_letter=cover_letter, cover_job_title=cover_job_title, company=company)
 
@@ -946,59 +1047,9 @@ def download_cover_letter():
         name = request.form.get('name', 'N/A')
         state = request.form.get('state', '')
         country = request.form.get('country', '')
-        cover_letter = request.form.get('cover_letter', 'No cover letter available.')
+        cover_letter = request.form.get('cover_letter', '')
 
-        buffer = io.BytesIO()
-        p = canvas.Canvas(buffer, pagesize=letter)
-        width, height = letter
-
-        y_position = height - inch
-
-        def draw_text(text, font_size, bold=False, y_offset=14):
-            nonlocal y_position
-            p.setFont("Helvetica-Bold" if bold else "Helvetica", font_size)
-            p.drawString(inch, y_position, text)
-            y_position -= y_offset
-
-        def draw_wrapped_text(text, font_size, max_width=width - 2 * inch):
-            nonlocal y_position
-            p.setFont("Helvetica", font_size)
-            lines = []
-            words = text.split()
-            current_line = ""
-            for word in words:
-                test_line = f"{current_line} {word}".strip()
-                if p.stringWidth(test_line, "Helvetica", font_size) <= max_width:
-                    current_line = test_line
-                else:
-                    lines.append(current_line)
-                    current_line = word
-            if current_line:
-                lines.append(current_line)
-
-            for line in lines:
-                p.drawString(inch, y_position, line)
-                y_position -= 14
-                if y_position < inch:
-                    p.showPage()
-                    y_position = height - inch
-
-        p.setFillColor(colors.black)
-        draw_text(name, 16, bold=True, y_offset=20)
-        location = f"{state}, {country}" if state and country else (state or country or '')
-        if location:
-            draw_text(location, 12)
-        draw_text("Cover Letter", 14, bold=True, y_offset=20)
-        for paragraph in cover_letter.split("\n\n"):
-            paragraph = paragraph.strip()
-            if paragraph:
-                draw_wrapped_text(paragraph, 12)
-                y_position -= 10
-
-        p.showPage()
-        p.save()
-
-        buffer.seek(0)
+        buffer = generate_cover_letter_pdf(name, state, country, cover_letter)
         safe_name = re.sub(r'[^a-zA-Z0-9]', '_', name.lower())
         filename = f"{safe_name}_cover_letter.pdf"
 
@@ -1010,17 +1061,11 @@ def download_cover_letter():
         )
 
     except Exception as e:
-        return render_template('result.html', error=f"Failed to generate cover letter PDF: {str(e)}",
+        return render_template('result.html', error=f"Failed to download cover letter: {str(e)}",
                               name=request.form.get('name', 'N/A'),
-                              email=request.form.get('email', 'N/A'),
-                              phone=request.form.get('phone', ''),
                               state=request.form.get('state', ''),
                               country=request.form.get('country', ''),
-                              linkedin=request.form.get('linkedin', ''),
-                              skills=request.form.getlist('skills[]'),
-                              education=[],
-                              experience=[])
+                              cover_letter=request.form.get('cover_letter', ''))
 
 if __name__ == '__main__':
-    port = int(os.getenv('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=False)
+    app.run(debug=True)
