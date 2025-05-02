@@ -29,19 +29,22 @@ def call_gpt41(prompt, system_message, variation_seed=None):
             "Content-Type": "application/json"
         }
 
-        # Add a variation mechanism to the prompt to ensure different outputs on refresh
         if variation_seed is None:
-            variation_seed = str(time.time())  # Use timestamp as a seed for variation
-        modified_prompt = f"{prompt}\n\n[Variation Seed: {variation_seed}] To ensure a fresh and unique response, use this seed to vary your wording, style, and examples while maintaining the core meaning and intent."
+            variation_seed = str(time.time())
+        modified_prompt = (
+            f"{prompt}\n\n[Variation Seed: {variation_seed}] "
+            "To ensure a fresh, unique, and improved response, use this seed to vary your wording, style, and examples. "
+            "Generate a response that surpasses previous outputs by using more innovative language, dynamic phrasing, and creative examples, while maintaining the core meaning and intent."
+        )
 
         payload = {
-            "model": "openai/gpt-4.1",  # REPLACE WITH VALID MODEL NAME
+            "model": "openai/gpt-4.1-nano",
             "messages": [
                 {"role": "system", "content": system_message},
                 {"role": "user", "content": modified_prompt}
             ],
-            "temperature": 0.85,  # Slightly increase temperature for more creativity
-            "max_tokens": 1500    # Allow longer responses for richer content
+            "temperature": 1.0,
+            "max_tokens": 1500
         }
 
         response = requests.post(api_url, json=payload, headers=headers)
@@ -54,13 +57,14 @@ def call_gpt41(prompt, system_message, variation_seed=None):
 
 def enhance_job_description(description, variation_seed=None):
     system_message = (
-        "You are a master copywriter specializing in resume writing. Convert the given job description into 3-5 concise, achievement-based resume bullet points starting with the Unicode bullet character '•' (U+2022). "
-        "Use powerful action verbs, quantify achievements where possible (e.g., 'increased sales by 20%'), and incorporate industry-specific keywords to make the points stand out to recruiters. "
-        "Ensure the tone is professional, persuasive, and tailored to a high-impact resume. "
-        "When refreshing, generate a completely different set of bullet points with varied wording, metrics, and focus areas while maintaining the core responsibilities and achievements. "
+        "You are a master copywriter with a flair for creative and persuasive language, specializing in resume writing. "
+        "Transform the given job description into 3-5 concise, achievement-based resume bullet points. "
+        "Use a rich variety of dynamic action verbs and vivid language to captivate recruiters, highlighting the candidate's unique impact with professional flair. "
+        "Incorporate quantifiable achievements with specific metrics where possible and weave in industry-specific keywords to enhance relevance. "
+        "Craft each bullet with imaginative, memorable phrasing that paints a picture of success and innovation, ensuring the tone remains professional and striking. "
+        "When refreshing, generate a completely new set of bullet points that improves upon previous outputs by experimenting with diverse tones, varied sentence structures, and fresh, creative examples, while preserving the core responsibilities and achievements. "
         "Do not include any introductory text, explanations, or phrases like 'Certainly! Here are...'—only provide the bullet points, with each bullet point on a new line."
     )
-    # Remove any existing bullet points or special characters to ensure clean input for the API
     clean_description = re.sub(r'^[•\-\*]\s*', '', description, flags=re.MULTILINE)
     clean_description = clean_description.strip()
     prompt = f"Convert this job description into achievement-based resume bullet points: {clean_description}"
@@ -69,7 +73,6 @@ def enhance_job_description(description, variation_seed=None):
     if not content:
         return description if description and description.strip() not in ["hatchnil", "latecharl"] else "Description not provided."
 
-    # Post-process to remove unwanted introductory phrases and ensure proper bullet formatting
     unwanted_phrases = [
         r"^(Certainly|Here are|Below are|Following are|These are)[\s\S]*?:\s*",
         r"^(.*?bullet points for a Product Designer role:)\s*"
@@ -77,22 +80,25 @@ def enhance_job_description(description, variation_seed=None):
     for phrase in unwanted_phrases:
         content = re.sub(phrase, "", content, flags=re.IGNORECASE)
 
-    # Replace any hyphens or other bullet-like characters with Unicode bullet '•'
-    content = re.sub(r"^[-\*]\s*", "• ", content, flags=re.MULTILINE)
+    content = re.sub(r"^[•\-\*]\s*", "", content, flags=re.MULTILINE)
     content = content.strip()
 
-    # Ensure each line starts with a bullet point
     lines = content.split("\n")
-    content = "\n".join("• " + line.lstrip("• ").strip() for line in lines if line.strip())
+    content = "\n".join(line.strip() for line in lines if line.strip())
 
     return content
 
 def generate_cover_letter(resume_data, job_title, company, variation_seed=None):
     system_message = (
-        "You are a master copywriter specializing in cover letter writing. Write a concise, professional, and highly persuasive cover letter tailored to the given job title and company, using the candidate's resume data. "
-        "Address the letter to 'Hiring Manager'. Include a greeting, an engaging introduction, 2-3 paragraphs highlighting the candidate’s most relevant skills, experiences, and achievements, and a strong closing with a call to action. "
-        "Optionally mention the candidate's location (state and country) in the introduction if relevant to the role. Use eloquent, professional language with a touch of personality to make the letter memorable. "
-        "When refreshing, generate a completely different letter with varied structure, examples, and tone (e.g., enthusiastic, confident, or empathetic) while maintaining the core message and professionalism. "
+        "You are a master copywriter with a talent for crafting eloquent, memorable, and highly persuasive cover letters. "
+        "Write a concise, professional cover letter tailored to the given job title and company, using the candidate's resume data. "
+        "Address the letter to 'Hiring Manager'. Include a greeting, an engaging introduction that captures attention with a unique hook, "
+        "2-3 paragraphs highlighting the candidate’s most relevant skills, experiences, and achievements with vivid, imaginative language, "
+        "and a strong closing with a compelling call to action that leaves a lasting impression. "
+        "Optionally mention the candidate's location (state and country) in the introduction if relevant to the role. "
+        "Use sophisticated, professional language infused with personality—blend enthusiasm, confidence, and creativity to make the letter stand out. "
+        "When refreshing, generate a completely new letter that improves upon previous outputs by experimenting with different tones (e.g., passionate, visionary, or empathetic), "
+        "varying sentence structures, and introducing fresh, imaginative examples, while maintaining the core message and professionalism. "
         "Do not include any introductory text like 'Here is a cover letter...'—only provide the letter content."
     )
     location = f"{resume_data['state']}, {resume_data['country']}" if resume_data.get('state') and resume_data.get('country') else "unspecified location"
@@ -118,8 +124,9 @@ def generate_pdf(name, job_title, email, phone, state, country, linkedin, skills
     buffer = io.BytesIO()
     p = canvas.Canvas(buffer, pagesize=letter)
     width, height = letter
+    margin = 0.5 * inch  # Define a consistent margin for all sides
 
-    y_position = height - 0.75 * inch
+    y_position = height - margin
 
     def draw_text(text, x, y, font_size, font="Helvetica", bold=False, color=colors.black):
         nonlocal y_position
@@ -137,7 +144,7 @@ def generate_pdf(name, job_title, email, phone, state, country, linkedin, skills
         p.setFillColor(color)
         p.circle(x, y + 3, 2, fill=1)
 
-    def draw_bullet_text(text, font_size, indent=0.2 * inch, max_width=width - 2 * inch, x_start=inch, y_start=None, font="Helvetica", color=colors.black):
+    def draw_bullet_text(text, font_size, indent=0.2 * inch, max_width=width - 2 * margin, x_start=margin, y_start=None, font="Helvetica", color=colors.black):
         nonlocal y_position
         if y_start is not None:
             y_position = y_start
@@ -146,32 +153,40 @@ def generate_pdf(name, job_title, email, phone, state, country, linkedin, skills
         else:
             p.setFont(font, font_size)
         p.setFillColor(color)
-        lines = []
-        words = text.split()
-        current_line = ""
-        for word in words:
-            test_line = f"{current_line} {word}".strip()
-            if p.stringWidth(test_line, font, font_size) <= max_width:
-                current_line = test_line
-            else:
-                lines.append(current_line)
-                current_line = word
-        if current_line:
-            lines.append(current_line)
+        bullet_points = text.split("\n")
+        for point in bullet_points:
+            if point.strip():
+                draw_bullet(x_start, y_position, color)
+                lines = []
+                words = point.strip().split()
+                current_line = ""
+                for word in words:
+                    test_line = f"{current_line} {word}".strip()
+                    if p.stringWidth(test_line, font, font_size) <= max_width - indent:
+                        current_line = test_line
+                    else:
+                        lines.append(current_line)
+                        current_line = word
+                if current_line:
+                    lines.append(current_line)
+                for i, line in enumerate(lines):
+                    if i == 0:
+                        p.drawString(x_start + indent, y_position, line)
+                    else:
+                        p.drawString(x_start + indent, y_position, line)
+                    y_position -= 14
+                    if y_position < margin:
+                        p.showPage()
+                        y_position = height - margin
+                y_position -= 4
 
-        for line in lines:
-            draw_bullet(x_start, y_position, color)
-            p.drawString(x_start + indent, y_position, line)
-            y_position -= 14
-            if y_position < inch:
-                p.showPage()
-                y_position = height - inch
-
-    def draw_wrapped_text(text, font_size, x_start, y_start, max_width=width - 2 * inch, font="Helvetica", color=colors.black):
+    def draw_wrapped_text(text, font_size, x_start, y_start, max_width=width - 2 * margin, font="Helvetica", color=colors.black, bold=False):
         nonlocal y_position
         y_position = y_start
-        if font == "Times-Roman" and color == colors.black:
-            p.setFont("Times-Roman", font_size)
+        if font == "Times-Roman" and bold:
+            p.setFont("Times-Bold", font_size)
+        elif font == "Helvetica" and bold:
+            p.setFont("Helvetica-Bold", font_size)
         else:
             p.setFont(font, font_size)
         p.setFillColor(color)
@@ -191,9 +206,25 @@ def generate_pdf(name, job_title, email, phone, state, country, linkedin, skills
         for line in lines:
             p.drawString(x_start, y_position, line)
             y_position -= 14
-            if y_position < inch:
+            if y_position < margin:
                 p.showPage()
-                y_position = height - inch
+                y_position = height - margin
+
+    def wrap_text(text, font, font_size, max_width):
+        p.setFont(font, font_size)
+        lines = []
+        words = text.split()
+        current_line = ""
+        for word in words:
+            test_line = f"{current_line} {word}".strip()
+            if p.stringWidth(test_line, font, font_size) <= max_width:
+                current_line = test_line
+            else:
+                lines.append(current_line)
+                current_line = word
+        if current_line:
+            lines.append(current_line)
+        return lines
 
     def draw_section_divider(start_x, end_x, y, color1, color2=None):
         nonlocal y_position
@@ -218,268 +249,312 @@ def generate_pdf(name, job_title, email, phone, state, country, linkedin, skills
     if template == "modern":
         p.setFillColor(HexColor("#4B0082"))
         p.rect(0, height - 1.5 * inch, width, 1.5 * inch, fill=1, stroke=0)
-        draw_text(name, inch, height - 1.2 * inch, 20, bold=True, color=colors.white)
+        lines = wrap_text(name, "Helvetica-Bold", 20, width - 2 * margin)
+        y_position = height - 1.2 * inch
+        for line in lines:
+            draw_text(line, margin, y_position, 20, bold=True, color=colors.white)
+            y_position -= 24
         if job_title:
-            draw_text(job_title, inch, y_position - 20, 12, color=colors.white)
+            draw_wrapped_text(job_title, 12, margin, y_position - 10, max_width=width - 2 * margin, color=colors.white)
+            y_position -= 24
         y_position = height - 1.7 * inch
         location = f"{state}, {country}" if state and country else (state or country or '')
         if location:
-            draw_text(location, inch, y_position, 10, color=colors.grey)
+            draw_wrapped_text(location, 10, margin, y_position, max_width=width - 2 * margin, color=colors.grey)
             y_position -= 14
-        draw_text(email, inch, y_position, 10, color=colors.grey)
+        draw_wrapped_text(email, 10, margin, y_position, max_width=width - 2 * margin, color=colors.grey)
         y_position -= 14
         if phone:
-            draw_text(phone, inch, y_position, 10, color=colors.grey)
+            draw_wrapped_text(phone, 10, margin, y_position, max_width=width - 2 * margin, color=colors.grey)
             y_position -= 14
         if linkedin:
-            draw_text(linkedin, inch, y_position, 10, color=colors.grey)
+            draw_wrapped_text(linkedin, 10, margin, y_position, max_width=width - 2 * margin, color=colors.grey)
             y_position -= 20
         if skills:
-            draw_text("Skills", inch, y_position, 14, bold=True, color=HexColor("#4B0082"))
+            draw_text("Skills", margin, y_position, 14, bold=True, color=HexColor("#4B0082"))
             y_position -= 10
-            draw_section_divider(inch, width - inch, y_position, HexColor("#4B0082"), HexColor("#00CED1"))
+            draw_section_divider(margin, width - margin, y_position, HexColor("#4B0082"), HexColor("#00CED1"))
             y_position -= 10
             skills_text = ", ".join(skills)
-            draw_wrapped_text(skills_text, 10, inch, y_position)
+            draw_wrapped_text(skills_text, 10, margin, y_position, max_width=width - 2 * margin)
             y_position -= 20
         if education:
-            draw_text("Education", inch, y_position, 14, bold=True, color=HexColor("#4B0082"))
+            draw_text("Education", margin, y_position, 14, bold=True, color=HexColor("#4B0082"))
             y_position -= 10
-            draw_section_divider(inch, width - inch, y_position, HexColor("#4B0082"), HexColor("#00CED1"))
+            draw_section_divider(margin, width - margin, y_position, HexColor("#4B0082"), HexColor("#00CED1"))
             y_position -= 10
             for edu in education:
-                draw_text(f"{edu['degree']} - {edu['institution']}", inch, y_position, 12, bold=True)
+                draw_wrapped_text(f"{edu['degree']} - {edu['institution']}", 12, margin, y_position, max_width=width - 2 * margin, bold=True)
                 y_position -= 14
-                draw_text(f"{edu['start_year']} - {edu['end_year']}", inch, y_position, 10, color=colors.grey)
+                draw_wrapped_text(f"{edu['start_year']} - {edu['end_year']}", 10, margin, y_position, max_width=width - 2 * margin, color=colors.grey)
                 y_position -= 20
         if experience:
-            draw_text("Work Experience", inch, y_position, 14, bold=True, color=HexColor("#4B0082"))
+            draw_text("Work Experience", margin, y_position, 14, bold=True, color=HexColor("#4B0082"))
             y_position -= 10
-            draw_section_divider(inch, width - inch, y_position, HexColor("#4B0082"), HexColor("#00CED1"))
+            draw_section_divider(margin, width - margin, y_position, HexColor("#4B0082"), HexColor("#00CED1"))
             y_position -= 10
             for exp in experience:
-                draw_text(f"{exp['job_title']} - {exp['company']}", inch, y_position, 12, bold=True)
+                draw_wrapped_text(f"{exp['job_title']} - {exp['company']}", 12, margin, y_position, max_width=width - 2 * margin, bold=True)
                 y_position -= 14
-                draw_text(f"{exp['start_date']} - {exp['end_date']}", inch, y_position, 10, color=colors.grey)
+                draw_wrapped_text(f"{exp['start_date']} - {exp['end_date']}", 10, margin, y_position, max_width=width - 2 * margin, color=colors.grey)
                 y_position -= 14
-                bullet_points = exp['description'].split("\n")
-                for point in bullet_points:
-                    if point.strip():
-                        draw_bullet_text(point.strip(), 10, y_start=y_position)
+                if exp['description'].strip():
+                    draw_bullet_text(exp['description'].strip(), 10, y_start=y_position, x_start=margin, max_width=width - 2 * margin)
                 y_position -= 20
 
     elif template == "classic":
-        draw_text(name, inch, y_position, 18, "Times-Roman", bold=True)
-        y_position -= 20
+        lines = wrap_text(name, "Times-Bold", 18, width - 2 * margin)
+        y_position = height - margin
+        for line in lines:
+            draw_text(line, margin, y_position, 18, "Times-Roman", bold=True)
+            y_position -= 22
         if job_title:
-            draw_text(job_title, inch, y_position, 12, "Times-Roman")
-        y_position -= 20
+            draw_wrapped_text(job_title, 12, margin, y_position, max_width=width - 2 * margin, font="Times-Roman")
+            y_position -= 20
         location = f"{state}, {country}" if state and country else (state or country or '')
         if location:
-            draw_text(location, inch, y_position, 10, "Times-Roman")
+            draw_wrapped_text(location, 10, margin, y_position, max_width=width - 2 * margin, font="Times-Roman")
             y_position -= 14
-        draw_text(email, inch, y_position, 10, "Times-Roman")
+        draw_wrapped_text(email, 10, margin, y_position, max_width=width - 2 * margin, font="Times-Roman")
         y_position -= 14
         if phone:
-            draw_text(phone, inch, y_position, 10, "Times-Roman")
+            draw_wrapped_text(phone, 10, margin, y_position, max_width=width - 2 * margin, font="Times-Roman")
             y_position -= 14
         if linkedin:
-            draw_text(linkedin, inch, y_position, 10, "Times-Roman")
+            draw_wrapped_text(linkedin, 10, margin, y_position, max_width=width - 2 * margin, font="Times-Roman")
             y_position -= 20
         if skills:
-            draw_text("Skills", inch, y_position, 14, "Times-Roman", bold=True)
+            draw_text("Skills", margin, y_position, 14, "Times-Roman", bold=True)
             y_position -= 10
-            draw_section_divider(inch, width - inch, y_position, colors.black)
+            draw_section_divider(margin, width - margin, y_position, colors.black)
             y_position -= 10
             skills_text = ", ".join(skills)
-            draw_wrapped_text(skills_text, 10, inch, y_position, "Times-Roman")
+            draw_wrapped_text(skills_text, 10, margin, y_position, max_width=width - 2 * margin, font="Times-Roman")
             y_position -= 20
         if education:
-            draw_text("Education", inch, y_position, 14, "Times-Roman", bold=True)
+            draw_text("Education", margin, y_position, 14, "Times-Roman", bold=True)
             y_position -= 10
-            draw_section_divider(inch, width - inch, y_position, colors.black)
+            draw_section_divider(margin, width - margin, y_position, colors.black)
             y_position -= 10
             for edu in education:
-                draw_text(f"{edu['degree']} - {edu['institution']}", inch, y_position, 12, "Times-Roman", bold=True)
+                draw_wrapped_text(f"{edu['degree']} - {edu['institution']}", 12, margin, y_position, max_width=width - 2 * margin, font="Times-Roman", bold=True)
                 y_position -= 14
-                draw_text(f"{edu['start_year']} - {edu['end_year']}", inch, y_position, 10, "Times-Roman")
+                draw_wrapped_text(f"{edu['start_year']} - {edu['end_year']}", 10, margin, y_position, max_width=width - 2 * margin, font="Times-Roman")
                 y_position -= 20
         if experience:
-            draw_text("Work Experience", inch, y_position, 14, "Times-Roman", bold=True)
+            draw_text("Work Experience", margin, y_position, 14, "Times-Roman", bold=True)
             y_position -= 10
-            draw_section_divider(inch, width - inch, y_position, colors.black)
+            draw_section_divider(margin, width - margin, y_position, colors.black)
             y_position -= 10
             for exp in experience:
-                draw_text(f"{exp['job_title']} - {exp['company']}", inch, y_position, 12, "Times-Roman", bold=True)
+                draw_wrapped_text(f"{exp['job_title']} - {exp['company']}", 12, margin, y_position, max_width=width - 2 * margin, font="Times-Roman", bold=True)
                 y_position -= 14
-                draw_text(f"{exp['start_date']} - {exp['end_date']}", inch, y_position, 10, "Times-Roman")
+                draw_wrapped_text(f"{exp['start_date']} - {exp['end_date']}", 10, margin, y_position, max_width=width - 2 * margin, font="Times-Roman")
                 y_position -= 14
-                bullet_points = exp['description'].split("\n")
-                for point in bullet_points:
-                    if point.strip():
-                        draw_bullet_text(point.strip(), 10, y_start=y_position, font="Times-Roman")
+                if exp['description'].strip():
+                    draw_bullet_text(exp['description'].strip(), 10, y_start=y_position, font="Times-Roman", x_start=margin, max_width=width - 2 * margin)
                 y_position -= 20
 
     elif template == "minimalist":
-        draw_text(name, inch, y_position, 16, bold=True)
-        y_position -= 20
+        lines = wrap_text(name, "Helvetica-Bold", 16, width - 2 * margin)
+        y_position = height - margin
+        for line in lines:
+            draw_text(line, margin, y_position, 16, bold=True)
+            y_position -= 20
         if job_title:
-            draw_text(job_title, inch, y_position, 11)
-        y_position -= 20
+            draw_wrapped_text(job_title, 11, margin, y_position, max_width=width - 2 * margin)
+            y_position -= 20
         location = f"{state}, {country}" if state and country else (state or country or '')
         if location:
-            draw_text(location, inch, y_position, 10, color=colors.grey)
+            draw_wrapped_text(location, 10, margin, y_position, max_width=width - 2 * margin, color=colors.grey)
             y_position -= 14
-        draw_text(email, inch, y_position, 10, color=colors.grey)
+        draw_wrapped_text(email, 10, margin, y_position, max_width=width - 2 * margin, color=colors.grey)
         y_position -= 14
         if phone:
-            draw_text(phone, inch, y_position, 10, color=colors.grey)
+            draw_wrapped_text(phone, 10, margin, y_position, max_width=width - 2 * margin, color=colors.grey)
             y_position -= 14
         if linkedin:
-            draw_text(linkedin, inch, y_position, 10, color=colors.grey)
+            draw_wrapped_text(linkedin, 10, margin, y_position, max_width=width - 2 * margin, color=colors.grey)
             y_position -= 20
         if skills:
-            draw_text("Skills", inch, y_position, 12, bold=True)
+            draw_text("Skills", margin, y_position, 12, bold=True)
             y_position -= 10
             skills_text = ", ".join(skills)
-            draw_wrapped_text(skills_text, 10, inch, y_position)
+            draw_wrapped_text(skills_text, 10, margin, y_position, max_width=width - 2 * margin)
             y_position -= 20
         if education:
-            draw_text("Education", inch, y_position, 12, bold=True)
+            draw_text("Education", margin, y_position, 12, bold=True)
             y_position -= 10
             for edu in education:
-                draw_text(f"{edu['degree']} - {edu['institution']}", inch, y_position, 11, bold=True)
+                draw_wrapped_text(f"{edu['degree']} - {edu['institution']}", 11, margin, y_position, max_width=width - 2 * margin, bold=True)
                 y_position -= 14
-                draw_text(f"{edu['start_year']} - {edu['end_year']}", inch, y_position, 10, color=colors.grey)
+                draw_wrapped_text(f"{edu['start_year']} - {edu['end_year']}", 10, margin, y_position, max_width=width - 2 * margin, color=colors.grey)
                 y_position -= 20
         if experience:
-            draw_text("Work Experience", inch, y_position, 12, bold=True)
+            draw_text("Work Experience", margin, y_position, 12, bold=True)
             y_position -= 10
             for exp in experience:
-                draw_text(f"{exp['job_title']} - {exp['company']}", inch, y_position, 11, bold=True)
+                draw_wrapped_text(f"{exp['job_title']} - {exp['company']}", 11, margin, y_position, max_width=width - 2 * margin, bold=True)
                 y_position -= 14
-                draw_text(f"{exp['start_date']} - {exp['end_date']}", inch, y_position, 10, color=colors.grey)
+                draw_wrapped_text(f"{exp['start_date']} - {exp['end_date']}", 10, margin, y_position, max_width=width - 2 * margin, color=colors.grey)
                 y_position -= 14
-                bullet_points = exp['description'].split("\n")
-                for point in bullet_points:
-                    if point.strip():
-                        draw_bullet_text(point.strip(), 10, y_start=y_position)
+                if exp['description'].strip():
+                    draw_bullet_text(exp['description'].strip(), 10, y_start=y_position, x_start=margin, max_width=width - 2 * margin)
                 y_position -= 20
 
     elif template == "creative":
-        sidebar_width = 2.5 * inch
-        main_content_x = sidebar_width + 0.5 * inch
-        main_content_width = width - main_content_x - inch
-        p.setFillColor(HexColor("#FF4500"))
-        p.rect(0, 0, sidebar_width, height, fill=1, stroke=0)
-        sidebar_y = height - 1.2 * inch
-        draw_text(name, 0.5 * inch, sidebar_y, 16, bold=True, color=colors.white)
-        sidebar_y -= 20
+        # Define layout dimensions
+        timeline_x = 0.5 * inch  # X position of the vertical timeline
+        sidebar_width = 3.0 * inch  # Width of the Work Experience section
+        main_content_x = sidebar_width + 0.5 * inch  # Start of the main content area
+        main_content_width = width - main_content_x - margin  # Width of the main content area
+
+        # --- Main Content Area (Right Side) ---
+        # Draw Name and Job Title
+        y_position = height - margin
+        lines = wrap_text(name.upper(), "Helvetica-Bold", 36, main_content_width)
+        for line in lines:
+            draw_text(line, main_content_x, y_position, 36, bold=True, color=HexColor("#008000"))
+            y_position -= 40
         if job_title:
-            draw_wrapped_text(job_title, 11, 0.5 * inch, sidebar_y, max_width=sidebar_width - inch, color=colors.white)
-            sidebar_y = y_position - 20
-        location = f"{state}, {country}" if state and country else (state or country or '')
-        if location:
-            draw_wrapped_text(location, 9, 0.5 * inch, sidebar_y, max_width=sidebar_width - inch, color=colors.white)
-            sidebar_y = y_position - 14
-        draw_wrapped_text(email, 9, 0.5 * inch, sidebar_y, max_width=sidebar_width - inch, color=colors.white)
-        sidebar_y = y_position - 14
-        if phone:
-            draw_wrapped_text(phone, 9, 0.5 * inch, sidebar_y, max_width=sidebar_width - inch, color=colors.white)
-            sidebar_y = y_position - 14
+            draw_wrapped_text(job_title.upper(), 14, main_content_x, y_position, max_width=main_content_width, bold=True)
+            y_position -= 20
+
+        # Contact Information
         if linkedin:
-            draw_wrapped_text(linkedin, 9, 0.5 * inch, sidebar_y, max_width=sidebar_width - inch, color=colors.white)
-            sidebar_y = y_position - 20
+            draw_wrapped_text(linkedin, 10, main_content_x, y_position, max_width=main_content_width)
+            y_position -= 14
+        if email:
+            draw_wrapped_text(email, 10, main_content_x, y_position, max_width=main_content_width)
+            y_position -= 14
+        if phone:
+            draw_wrapped_text(phone, 10, main_content_x, y_position, max_width=main_content_width)
+            y_position -= 20
+
+        # Skills
         if skills:
-            draw_text("Skills", 0.5 * inch, sidebar_y, 12, bold=True, color=colors.white)
-            sidebar_y = y_position - 10
-            skills_text = ", ".join(skills)
-            draw_wrapped_text(skills_text, 9, 0.5 * inch, sidebar_y, max_width=sidebar_width - inch, color=colors.white)
-            sidebar_y = y_position - 20
-        y_position = height - 1.2 * inch
-        if education:
-            draw_text("Education", main_content_x, y_position, 14, bold=True, color=HexColor("#008080"))
             y_position -= 10
-            draw_section_divider(main_content_x, width - inch, y_position, HexColor("#008080"))
+            draw_text("RELEVANT SKILLS", main_content_x, y_position, 12, bold=True, color=HexColor("#008000"))
+            y_position -= 10
+            for skill in skills:
+                draw_bullet_text(skill, 10, x_start=main_content_x, y_start=y_position, max_width=main_content_width)
+                y_position -= 10
+
+        # Education
+        if education:
+            y_position -= 10
+            draw_text("EDUCATION HISTORY", main_content_x, y_position, 12, bold=True, color=HexColor("#008000"))
             y_position -= 10
             for edu in education:
-                draw_text(f"{edu['degree']} - {edu['institution']}", main_content_x, y_position, 12, bold=True)
+                degree_text = f"{edu['degree']}"
+                institution_text = f"{edu['institution']}"
+                date_text = f"{edu['start_year']}"
+                draw_wrapped_text(degree_text, 10, main_content_x, y_position, max_width=main_content_width, bold=True)
                 y_position -= 14
-                draw_text(f"{edu['start_year']} - {edu['end_year']}", main_content_x, y_position, 10, color=colors.grey)
+                draw_wrapped_text(institution_text, 10, main_content_x, y_position, max_width=main_content_width)
+                y_position -= 14
+                draw_wrapped_text(date_text, 10, main_content_x, y_position, max_width=main_content_width, color=colors.grey)
                 y_position -= 20
+
+        # --- Work Experience with Timeline (Left Side) ---
         if experience:
-            draw_text("Work Experience", main_content_x, y_position, 14, bold=True, color=HexColor("#008080"))
-            y_position -= 10
-            draw_section_divider(main_content_x, width - inch, y_position, HexColor("#008080"))
-            y_position -= 10
+            sidebar_y = height - margin
+            draw_text("WORK EXPERIENCE", 0.75 * inch, sidebar_y, 12, bold=True, color=HexColor("#008000"))
+            sidebar_y -= 20
+
+            # Track the timeline start position
+            timeline_start_y = sidebar_y
+
+            # Draw each experience entry and calculate the final y position
             for exp in experience:
-                draw_text(f"{exp['job_title']} - {exp['company']}", main_content_x, y_position, 12, bold=True)
-                y_position -= 14
-                draw_text(f"{exp['start_date']} - {exp['end_date']}", main_content_x, y_position, 10, color=colors.grey)
-                y_position -= 14
-                bullet_points = exp['description'].split("\n")
-                for point in bullet_points:
-                    if point.strip():
-                        draw_bullet_text(point.strip(), 10, x_start=main_content_x, y_start=y_position, max_width=main_content_width)
-                y_position -= 20
+                # Draw the timeline marker (circle)
+                p.setFillColor(HexColor("#008000"))
+                p.circle(timeline_x, sidebar_y - 5, 5, fill=1)
+
+                # Job Title (bold, uppercase)
+                draw_wrapped_text(f"{exp['job_title'].upper()}", 10, 0.75 * inch, sidebar_y, max_width=sidebar_width - 0.5 * inch, bold=True)
+                sidebar_y -= 14
+
+                # Company
+                draw_wrapped_text(f"{exp['company']}", 10, 0.75 * inch, sidebar_y, max_width=sidebar_width - 0.5 * inch)
+                sidebar_y -= 14
+
+                # Dates
+                draw_wrapped_text(f"{exp['start_date']} - {exp['end_date']}", 10, 0.75 * inch, sidebar_y, max_width=sidebar_width - 0.5 * inch, color=colors.grey)
+                sidebar_y -= 14
+
+                # Description (bullet points)
+                if exp['description'].strip():
+                    draw_bullet_text(exp['description'].strip(), 10, x_start=0.75 * inch, y_start=sidebar_y, max_width=sidebar_width - 0.5 * inch)
+                sidebar_y = y_position - 20  # Update sidebar_y to match y_position after bullet points
+
+            # Draw the vertical timeline from start to the final sidebar_y position
+            timeline_end_y = max(sidebar_y, margin)  # Ensure it doesn't go below the bottom margin
+            d = Drawing(width, height)
+            line = Line(timeline_x, timeline_start_y, timeline_x, timeline_end_y)
+            line.strokeColor = HexColor("#008000")  # Green timeline
+            line.strokeWidth = 2
+            d.add(line)
+            renderPDF.draw(d, p, 0, 0)
 
     elif template == "professional":
         sidebar_width = 2.5 * inch
         main_content_x = sidebar_width + 0.5 * inch
-        main_content_width = width - main_content_x - inch
+        main_content_width = width - main_content_x - margin
         p.setFillColor(HexColor("#F5F5F5"))
         p.rect(0, 0, sidebar_width, height, fill=1, stroke=0)
-        sidebar_y = height - 1.2 * inch
+        sidebar_y = height - margin
         draw_text("Contact", 0.5 * inch, sidebar_y, 12, bold=True, color=HexColor("#4682B4"))
         sidebar_y -= 20
         location = f"{state}, {country}" if state and country else (state or country or '')
         if location:
-            draw_wrapped_text(location, 9, 0.5 * inch, sidebar_y, max_width=sidebar_width - inch)
+            draw_wrapped_text(location, 9, 0.5 * inch, sidebar_y, max_width=sidebar_width - margin)
             sidebar_y = y_position - 14
-        draw_wrapped_text(email, 9, 0.5 * inch, sidebar_y, max_width=sidebar_width - inch)
+        draw_wrapped_text(email, 9, 0.5 * inch, sidebar_y, max_width=sidebar_width - margin)
         sidebar_y = y_position - 14
         if phone:
-            draw_wrapped_text(phone, 9, 0.5 * inch, sidebar_y, max_width=sidebar_width - inch)
+            draw_wrapped_text(phone, 9, 0.5 * inch, sidebar_y, max_width=sidebar_width - margin)
             sidebar_y = y_position - 14
         if linkedin:
-            draw_wrapped_text(linkedin, 9, 0.5 * inch, sidebar_y, max_width=sidebar_width - inch)
+            draw_wrapped_text(linkedin, 9, 0.5 * inch, sidebar_y, max_width=sidebar_width - margin)
             sidebar_y = y_position - 20
         if skills:
             draw_text("Skills", 0.5 * inch, sidebar_y, 12, bold=True, color=HexColor("#4682B4"))
             sidebar_y = y_position - 20
             for skill in skills:
-                draw_bullet_text(skill, 9, x_start=0.5 * inch, y_start=sidebar_y, max_width=sidebar_width - inch)
+                draw_bullet_text(skill, 9, x_start=0.5 * inch, y_start=sidebar_y, max_width=sidebar_width - margin)
                 sidebar_y = y_position - 10
-        y_position = height - 1.2 * inch
-        draw_text(name, main_content_x, y_position, 18, bold=True, color=HexColor("#4682B4"))
-        y_position -= 20
+        y_position = height - margin
+        lines = wrap_text(name, "Helvetica-Bold", 18, main_content_width)
+        for line in lines:
+            draw_text(line, main_content_x, y_position, 18, bold=True, color=HexColor("#4682B4"))
+            y_position -= 22
         if job_title:
-            draw_text(job_title, main_content_x, y_position, 12, color=HexColor("#4682B4"))
-        y_position -= 30
+            draw_wrapped_text(job_title, 12, main_content_x, y_position, max_width=main_content_width, color=HexColor("#4682B4"))
+            y_position -= 20
+        y_position -= 10
         if education:
             draw_text("Education", main_content_x, y_position, 14, bold=True, color=HexColor("#4682B4"))
             y_position -= 10
-            draw_section_divider(main_content_x, width - inch, y_position, HexColor("#4682B4"))
+            draw_section_divider(main_content_x, width - margin, y_position, HexColor("#4682B4"))
             y_position -= 10
             for edu in education:
-                draw_text(f"{edu['degree']} - {edu['institution']}", main_content_x, y_position, 12, bold=True)
+                draw_wrapped_text(f"{edu['degree']} - {edu['institution']}", 12, main_content_x, y_position, max_width=main_content_width, bold=True)
                 y_position -= 14
-                draw_text(f"{edu['start_year']} - {edu['end_year']}", main_content_x, y_position, 10, color=colors.grey)
+                draw_wrapped_text(f"{edu['start_year']} - {edu['end_year']}", 10, main_content_x, y_position, max_width=main_content_width, color=colors.grey)
                 y_position -= 20
         if experience:
             draw_text("Work Experience", main_content_x, y_position, 14, bold=True, color=HexColor("#4682B4"))
             y_position -= 10
-            draw_section_divider(main_content_x, width - inch, y_position, HexColor("#4682B4"))
+            draw_section_divider(main_content_x, width - margin, y_position, HexColor("#4682B4"))
             y_position -= 10
             for exp in experience:
-                draw_text(f"{exp['job_title']} - {exp['company']}", main_content_x, y_position, 12, bold=True)
+                draw_wrapped_text(f"{exp['job_title']} - {exp['company']}", 12, main_content_x, y_position, max_width=main_content_width, bold=True)
                 y_position -= 14
-                draw_text(f"{exp['start_date']} - {exp['end_date']}", main_content_x, y_position, 10, color=colors.grey)
+                draw_wrapped_text(f"{exp['start_date']} - {exp['end_date']}", 10, main_content_x, y_position, max_width=main_content_width, color=colors.grey)
                 y_position -= 14
-                bullet_points = exp['description'].split("\n")
-                for point in bullet_points:
-                    if point.strip():
-                        draw_bullet_text(point.strip(), 10, x_start=main_content_x, y_start=y_position, max_width=main_content_width)
+                if exp['description'].strip():
+                    draw_bullet_text(exp['description'].strip(), 10, x_start=main_content_x, y_start=y_position, max_width=main_content_width)
                 y_position -= 20
 
     p.showPage()
@@ -492,8 +567,9 @@ def generate_cover_letter_pdf(name, state, country, cover_letter):
     buffer = io.BytesIO()
     p = canvas.Canvas(buffer, pagesize=letter)
     width, height = letter
+    margin = 0.5 * inch
 
-    y_position = height - 0.75 * inch
+    y_position = height - margin
 
     def draw_text(text, x, y, font_size, font="Helvetica", bold=False, color=colors.black):
         nonlocal y_position
@@ -505,10 +581,15 @@ def generate_cover_letter_pdf(name, state, country, cover_letter):
         p.drawString(x, y, text)
         y_position = y
 
-    def draw_wrapped_text(text, font_size, x_start, y_start, max_width=width - 2 * inch, font="Helvetica", color=colors.black):
+    def draw_wrapped_text(text, font_size, x_start, y_start, max_width=width - 2 * margin, font="Helvetica", color=colors.black, bold=False):
         nonlocal y_position
         y_position = y_start
-        p.setFont(font, font_size)
+        if font == "Times-Roman" and bold:
+            p.setFont("Times-Bold", font_size)
+        elif font == "Helvetica" and bold:
+            p.setFont("Helvetica-Bold", font_size)
+        else:
+            p.setFont(font, font_size)
         p.setFillColor(color)
         lines = []
         words = text.split()
@@ -526,30 +607,26 @@ def generate_cover_letter_pdf(name, state, country, cover_letter):
         for line in lines:
             p.drawString(x_start, y_position, line)
             y_position -= 14
-            if y_position < inch:
+            if y_position < margin:
                 p.showPage()
-                y_position = height - inch
+                y_position = height - margin
 
-    # Header: Name and Contact Info
-    draw_text(name, inch, y_position, 16, bold=True)
+    draw_wrapped_text(name, 16, margin, y_position, max_width=width - 2 * margin, bold=True)
     y_position -= 20
     location = f"{state}, {country}" if state and country else (state or country or '')
     if location:
-        draw_text(location, inch, y_position, 10, color=colors.grey)
+        draw_wrapped_text(location, 10, margin, y_position, max_width=width - 2 * margin, color=colors.grey)
         y_position -= 14
     y_position -= 20
 
-    # Current Date
     current_date = datetime.now().strftime("%B %d, %Y")
-    draw_text(current_date, inch, y_position, 10)
+    draw_wrapped_text(current_date, 10, margin, y_position, max_width=width - 2 * margin)
     y_position -= 30
 
-    # Recipient
-    draw_text("Hiring Manager", inch, y_position, 10)
+    draw_wrapped_text("Hiring Manager", 10, margin, y_position, max_width=width - 2 * margin)
     y_position -= 30
 
-    # Cover Letter Content
-    draw_wrapped_text(cover_letter, 10, inch, y_position)
+    draw_wrapped_text(cover_letter, 10, margin, y_position, max_width=width - 2 * margin)
 
     p.showPage()
     p.save()
@@ -566,7 +643,6 @@ def landing():
 def form():
     if request.method == 'POST':
         try:
-            # ---------- Collect personal info ----------
             name = request.form.get('fullname', '').strip()
             job_title = request.form.get('job_title', '').strip()
             email = request.form.get('email', '').strip()
@@ -578,11 +654,9 @@ def form():
             if not name or not email:
                 return render_template('form.html', error="Full Name and Email are required.")
 
-            # ---------- Skills ----------
             skills = request.form.getlist('skills[]')
             skills = [skill.strip() for skill in skills if skill.strip()]
 
-            # ---------- Education ----------
             education = []
             degrees = request.form.getlist('degree[]')
             institutions = request.form.getlist('institution[]')
@@ -598,7 +672,6 @@ def form():
                         'end_year': end.strip() or 'N/A'
                     })
 
-            # ---------- Experience ----------
             experience = []
             job_titles = request.form.getlist('job_title[]')
             companies = request.form.getlist('company[]')
@@ -609,7 +682,6 @@ def form():
             for title, company, start, end, desc in zip(job_titles, companies, start_dates, end_dates, descriptions):
                 if title.strip() and company.strip():
                     raw_desc = desc.strip() or "Description not provided."
-                    # Clean description by removing bullet points before processing
                     clean_desc = re.sub(r'^[•\-\*]\s*', '', raw_desc, flags=re.MULTILINE).strip()
                     improved_desc = enhance_job_description(clean_desc) if clean_desc and clean_desc.lower() not in ["hatchnil", "latecharl"] else "Description not provided."
                     experience.append({
@@ -617,8 +689,8 @@ def form():
                         'company': company.strip(),
                         'start_date': start.strip() or 'N/A',
                         'end_date': end.strip() or 'Present',
-                        'raw_description': raw_desc,  # Store the raw description
-                        'description': improved_desc  # Store the AI-enhanced description
+                        'raw_description': raw_desc,
+                        'description': improved_desc
                     })
 
             resume_data = {
@@ -639,7 +711,6 @@ def form():
         except Exception as e:
             return render_template('form.html', error=f"An error occurred while processing the form: {str(e)}")
 
-    # Handle edit case
     elif request.args.get('edit') == '1':
         try:
             name = request.args.get('name', '')
@@ -650,12 +721,10 @@ def form():
             country = request.args.get('country', '')
             linkedin = request.args.get('linkedin', '')
 
-            # Ensure skills is a list
             skills = request.args.getlist('skills[]')
             if not isinstance(skills, list):
                 skills = []
 
-            # Ensure education is a list of dictionaries
             education = []
             degrees = request.args.getlist('education_degree[]')
             institutions = request.args.getlist('education_institution[]')
@@ -670,7 +739,6 @@ def form():
                     'end_year': end or ''
                 })
 
-            # Ensure experience is a list of dictionaries
             experience = []
             job_titles = request.args.getlist('experience_job_title[]')
             companies = request.args.getlist('experience_company[]')
@@ -686,7 +754,7 @@ def form():
                     'company': company or '',
                     'start_date': start or '',
                     'end_date': end or '',
-                    'description': raw_desc or ''  # Use raw_description for editing
+                    'description': raw_desc or ''
                 })
 
             return render_template('form.html', 
@@ -852,18 +920,16 @@ def refresh_resume():
         ):
             education.append({'degree': degree, 'institution': institution, 'start_year': start, 'end_year': end})
 
-        # Rebuild experience and regenerate descriptions
         experience = []
-        variation_seed = str(time.time())  # Use timestamp for variation
+        variation_seed = str(time.time())
         for title, company, start, end, raw_desc in zip(
             request.args.getlist('experience_job_title[]'),
             request.args.getlist('experience_company[]'),
             request.args.getlist('experience_start_date[]'),
             request.args.getlist('experience_end_date[]'),
-            request.args.getlist('experience_raw_description[]')  # Use raw description
+            request.args.getlist('experience_raw_description[]')
         ):
-            # Regenerate the description using the raw input with a variation seed
-            improved_desc = enhance_job_description(raw_desc, variation_seed=variation_seed) if raw_desc and raw_desc.lower() not in ["hatchnil", "latecharl"] else "Description not provided."
+            improved_desc = enhance_job_description(raw_desc, variation_seed) if raw_desc and raw_desc.lower() not in ["hatchnil", "latecharl"] else "Description not provided."
             experience.append({
                 'job_title': title,
                 'company': company,
@@ -1024,7 +1090,7 @@ def refresh_cover_letter():
             'experience': experience
         }
 
-        variation_seed = str(time.time())  # Use timestamp for variation
+        variation_seed = str(time.time())
         cover_letter = generate_cover_letter(resume_data, cover_job_title, company, variation_seed=variation_seed)
         return render_template('result.html', **resume_data, cover_letter=cover_letter, cover_job_title=cover_job_title, company=company)
 
