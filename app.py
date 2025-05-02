@@ -546,6 +546,7 @@ def generate_pdf(name, job_title, email, phone, state, country, linkedin, skills
         p.showPage()
         p.save()
         buffer.seek(0)
+        logger.debug(f"PDF generated successfully for template {template}")
         return buffer
     except Exception as e:
         logger.error(f"Error generating PDF: {e}")
@@ -819,6 +820,10 @@ def preview_resume():
         buffer = generate_pdf(name, job_title, email, phone, state, country, linkedin, skills, education, experience, template)
         pdf_data = buffer.getvalue()
         logger.debug(f"PDF generated, size: {len(pdf_data)} bytes")
+
+        if not pdf_data:
+            logger.error("PDF data is empty")
+            return Response("Error: Generated PDF is empty", status=500, mimetype='text/plain')
 
         headers = {
             'Content-Type': 'application/pdf',
