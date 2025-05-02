@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, send_file, Response, jsonify
+from flask import Flask, render_template, request, redirect, session, url_for, send_file, Response
 import requests
 import io
 from reportlab.lib.pagesizes import letter
@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 from flask_cors import CORS
 import re
 import os
+from urllib.parse import urlencode
 import time
 import logging
 
@@ -22,21 +23,24 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 app = Flask(__name__)
-# Enable CORS for all routes, specifically allowing necessary headers and methods
+import secrets
+secret_key = os.getenv('FLASK_SECRET_KEY')
+if not secret_key:
+    logger.warning("FLASK_SECRET_KEY not found in environment. Generating a temporary secret key.")
+    secret_key = secrets.token_hex(16)  # Generate a 32-character hex string
+app.secret_key = secret_key
 CORS(app, resources={
     r"/preview_resume": {
-        "origins": ["http://localhost:5000", "https://*.onrender.com"],
-        "methods": ["GET", "POST"],
+        "origins": "*",
+        "methods": ["POST"],
         "allow_headers": ["Content-Type", "Authorization"],
         "expose_headers": ["Content-Disposition", "Content-Type"]
     }
 })
 
-# ----------------- GPT API CALL ------------------
-
 def call_gpt41(prompt, system_message, variation_seed=None):
     try:
-        api_url = "https://models.github.ai/inference/chat/completions"  # REPLACE WITH VALID API URL
+        api_url = "https://models.github.ai/inference/chat/completions"
         api_key = os.getenv("GPT_API_KEY")
 
         headers = {
@@ -134,7 +138,6 @@ def generate_cover_letter(resume_data, job_title, company, variation_seed=None):
 
     return content
 
-# Helper function to generate PDF (used for both preview and download)
 def generate_pdf(name, job_title, email, phone, state, country, linkedin, skills, education, experience, template):
     try:
         buffer = io.BytesIO()
@@ -560,7 +563,6 @@ def generate_pdf(name, job_title, email, phone, state, country, linkedin, skills
         logger.error(f"Error generating PDF: {e}")
         raise
 
-# Helper function to generate cover letter PDF
 def generate_cover_letter_pdf(name, state, country, cover_letter):
     try:
         buffer = io.BytesIO()
@@ -635,8 +637,6 @@ def generate_cover_letter_pdf(name, state, country, cover_letter):
         logger.error(f"Error generating cover letter PDF: {e}")
         raise
 
-# ----------------- ROUTES ------------------
-
 @app.route('/')
 def landing():
     return render_template('landingpage.html')
@@ -645,6 +645,7 @@ def landing():
 def form():
     if request.method == 'POST':
         try:
+            # Extract basic information
             name = request.form.get('fullname', '').strip()
             job_title = request.form.get('job_title', '').strip()
             email = request.form.get('email', '').strip()
@@ -656,9 +657,11 @@ def form():
             if not name or not email:
                 return render_template('form.html', error="Full Name and Email are required.")
 
+            # Extract skills
             skills = request.form.getlist('skills[]')
             skills = [skill.strip() for skill in skills if skill.strip()]
 
+            # Extract education
             education = []
             degrees = request.form.getlist('degree[]')
             institutions = request.form.getlist('institution[]')
@@ -666,7 +669,7 @@ def form():
             end_years = request.form.getlist('end_year[]')
 
             for degree, institution, start, end in zip(degrees, institutions, start_years, end_years):
-                if degree.strip() and institution.strip():
+                if degree.strip() or institution.strip():
                     education.append({
                         'degree': degree.strip(),
                         'institution': institution.strip(),
@@ -674,6 +677,7 @@ def form():
                         'end_year': end.strip() or 'N/A'
                     })
 
+            # Extract experience
             experience = []
             job_titles = request.form.getlist('job_title[]')
             companies = request.form.getlist('company[]')
@@ -695,6 +699,7 @@ def form():
                         'description': improved_desc
                     })
 
+            # Store resume data in session
             resume_data = {
                 'name': name,
                 'job_title': job_title,
@@ -707,8 +712,9 @@ def form():
                 'education': education,
                 'experience': experience
             }
+            session['resume_data'] = resume_data
 
-            return render_template('result.html', **resume_data)
+            return redirect(url_for('result'))
 
         except Exception as e:
             logger.error(f"Error processing form: {e}")
@@ -716,61 +722,12 @@ def form():
 
     elif request.args.get('edit') == '1':
         try:
-            name = request.args.get('name', '')
-            job_title = request.args.get('job_title', '')
-            email = request.args.get('email', '')
-            phone = request.args.get('phone', '')
-            state = request.args.get('state', '')
-            country = request.args.get('country', '')
-            linkedin = request.args.get('linkedin', '')
+            # Load resume data from session for editing
+            resume_data = session.get('resume_data', {})
+            if not resume_data:
+                return render_template('form.html', error="No resume data found to edit.")
 
-            skills = request.args.getlist('skills[]')
-            if not isinstance(skills, list):
-                skills = []
-
-            education = []
-            degrees = request.args.getlist('education_degree[]')
-            institutions = request.args.getlist('education_institution[]')
-            start_years = request.args.getlist('education_start_year[]')
-            end_years = request.args.getlist('education_end_year[]')
-
-            for degree, institution, start, end in zip(degrees, institutions, start_years, end_years):
-                education.append({
-                    'degree': degree or '',
-                    'institution': institution or '',
-                    'start_year': start or '',
-                    'end_year': end or ''
-                })
-
-            experience = []
-            job_titles = request.args.getlist('experience_job_title[]')
-            companies = request.args.getlist('experience_company[]')
-            start_dates = request.args.getlist('experience_start_date[]')
-            end_dates = request.args.getlist('experience_end_date[]')
-            raw_descriptions = request.args.getlist('experience_raw_description[]')
-
-            for title, company, start, end, raw_desc in zip(
-                job_titles, companies, start_dates, end_dates, raw_descriptions
-            ):
-                experience.append({
-                    'job_title': title or '',
-                    'company': company or '',
-                    'start_date': start or '',
-                    'end_date': end or '',
-                    'description': raw_desc or ''
-                })
-
-            return render_template('form.html', 
-                                 name=name, 
-                                 job_title=job_title, 
-                                 email=email, 
-                                 phone=phone, 
-                                 state=state, 
-                                 country=country, 
-                                 linkedin=linkedin, 
-                                 skills=skills, 
-                                 education=education, 
-                                 experience=experience)
+            return render_template('form.html', **resume_data)
 
         except Exception as e:
             logger.error(f"Error loading edit form: {e}")
@@ -778,10 +735,43 @@ def form():
 
     return render_template('form.html')
 
+@app.route('/result')
+def result():
+    try:
+        # Retrieve resume data from session
+        resume_data = session.get('resume_data', {})
+        if not resume_data:
+            return render_template('result.html', error="No resume data found.")
+
+        # Ensure all fields have default values
+        resume_data.setdefault('name', 'N/A')
+        resume_data.setdefault('job_title', '')
+        resume_data.setdefault('email', 'N/A')
+        resume_data.setdefault('phone', '')
+        resume_data.setdefault('state', '')
+        resume_data.setdefault('country', '')
+        resume_data.setdefault('linkedin', '')
+        resume_data.setdefault('skills', [])
+        resume_data.setdefault('education', [])
+        resume_data.setdefault('experience', [])
+
+        # Handle cover letter if provided
+        cover_letter = request.args.get('cover_letter', '')
+        cover_job_title = request.args.get('cover_job_title', '')
+        company = request.args.get('company', '')
+
+        return render_template('result.html', **resume_data, cover_letter=cover_letter, cover_job_title=cover_job_title, company=company)
+
+    except Exception as e:
+        logger.error(f"Error rendering result page: {e}")
+        return render_template('result.html', error=f"Failed to load result page: {str(e)}")
+
 @app.route('/preview_resume', methods=['POST'])
 def preview_resume():
     try:
         logger.debug("Starting preview_resume endpoint")
+        
+        # Extract form data
         name = request.form.get('name', 'N/A')
         job_title = request.form.get('job_title', '')
         email = request.form.get('email', 'N/A')
@@ -794,53 +784,65 @@ def preview_resume():
 
         logger.debug(f"Received form data: name={name}, template={template}, skills={skills}")
 
+        # Extract education data with proper handling
         education = []
-        for degree, institution, start, end in zip(
-            request.form.getlist('education_degree[]'),
-            request.form.getlist('education_institution[]'),
-            request.form.getlist('education_start_year[]'),
-            request.form.getlist('education_end_year[]')
-        ):
-            education.append({
-                'degree': degree,
-                'institution': institution,
-                'start_year': start,
-                'end_year': end
-            })
+        degrees = request.form.getlist('education_degree[]')
+        institutions = request.form.getlist('education_institution[]')
+        start_years = request.form.getlist('education_start_year[]')
+        end_years = request.form.getlist('education_end_year[]')
+        for degree, institution, start, end in zip(degrees, institutions, start_years, end_years):
+            if degree.strip() or institution.strip():  # Include if at least one field is provided
+                education.append({
+                    'degree': degree.strip() or 'N/A',
+                    'institution': institution.strip() or 'N/A',
+                    'start_year': start.strip() or 'N/A',
+                    'end_year': end.strip() or 'N/A'
+                })
 
+        # Extract experience data with proper handling
         experience = []
-        for title, company, start, end, desc in zip(
-            request.form.getlist('experience_job_title[]'),
-            request.form.getlist('experience_company[]'),
-            request.form.getlist('experience_start_date[]'),
-            request.form.getlist('experience_end_date[]'),
-            request.form.getlist('experience_description[]')
-        ):
-            experience.append({
-                'job_title': title,
-                'company': company,
-                'start_date': start,
-                'end_date': end,
-                'description': desc
-            })
+        job_titles = request.form.getlist('experience_job_title[]')
+        companies = request.form.getlist('experience_company[]')
+        start_dates = request.form.getlist('experience_start_date[]')
+        end_dates = request.form.getlist('experience_end_date[]')
+        descriptions = request.form.getlist('experience_description[]')
+        for title, company, start, end, desc in zip(job_titles, companies, start_dates, end_dates, descriptions):
+            if title.strip() and company.strip():  # Only include if both title and company are provided
+                experience.append({
+                    'job_title': title.strip() or 'N/A',
+                    'company': company.strip() or 'N/A',
+                    'start_date': start.strip() or 'N/A',
+                    'end_date': end.strip() or 'Present',
+                    'description': desc.strip() or 'Description not provided.'
+                })
 
+        # Generate PDF for preview
         logger.debug("Generating PDF for preview")
         buffer = generate_pdf(name, job_title, email, phone, state, country, linkedin, skills, education, experience, template)
         pdf_data = buffer.getvalue()
-        logger.debug(f"PDF generated, size: {len(pdf_data)} bytes")
+        logger.debug(f"PDF generated successfully, size: {len(pdf_data)} bytes")
 
         if not pdf_data:
             logger.error("PDF data is empty")
-            return jsonify({'error': 'Generated PDF is empty'}), 500
+            return Response("Error: Generated PDF is empty", status=500, mimetype='text/plain')
 
-        response = Response(pdf_data, mimetype='application/pdf')
-        response.headers['Content-Disposition'] = 'inline; filename=preview.pdf'
-        response.headers['X-Frame-Options'] = 'SAMEORIGIN'
-        response.headers['Access-Control-Allow-Origin'] = '*'
-        return response
+        # Set response headers
+        headers = {
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': 'inline; filename=preview.pdf',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+            'X-Frame-Options': 'ALLOWALL'
+        }
+        return Response(pdf_data, mimetype='application/pdf', headers=headers)
+
     except Exception as e:
         logger.error(f"Error in preview_resume: {e}")
-        return jsonify({'error': str(e)}), 500
+        return Response(f"Error generating preview: {str(e)}", status=500, mimetype='text/plain')
 
 @app.route('/download_resume', methods=['POST'])
 def download_resume():

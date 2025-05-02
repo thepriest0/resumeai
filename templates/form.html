@@ -410,198 +410,174 @@
     let currentStep = 1;
 
     function nextStep(step) {
-      document.getElementById(`form-step-${currentStep}`).classList.add('hidden');
-      document.getElementById(`form-step-${step}`).classList.remove('hidden');
-      
-      // Update progress bar
-      document.querySelectorAll('.progress-step').forEach((el, index) => {
-        if (index + 1 < step) {
-          el.classList.remove('active');
-          el.classList.add('completed');
-        } else if (index + 1 === step) {
-          el.classList.add('active');
-          el.classList.remove('completed');
-        } else {
-          el.classList.remove('active', 'completed');
-        }
-      });
-      document.querySelectorAll('.progress-line').forEach((el, index) => {
-        if (index + 1 < step) {
-          el.classList.add('completed');
-        } else {
-          el.classList.remove('completed');
-        }
-      });
+        document.getElementById(`form-step-${currentStep}`).classList.add('hidden');
+        document.getElementById(`form-step-${step}`).classList.remove('hidden');
+        
+        // Update progress bar
+        document.querySelectorAll('.progress-step').forEach((el, index) => {
+            if (index + 1 < step) {
+                el.classList.remove('active');
+                el.classList.add('completed');
+            } else if (index + 1 === step) {
+                el.classList.add('active');
+                el.classList.remove('completed');
+            } else {
+                el.classList.remove('active', 'completed');
+            }
+        });
+        document.querySelectorAll('.progress-line').forEach((el, index) => {
+            if (index + 1 < step) {
+                el.classList.add('completed');
+            } else {
+                el.classList.remove('completed');
+            }
+        });
 
-      currentStep = step;
+        currentStep = step;
     }
 
     function prevStep(step) {
-      document.getElementById(`form-step-${currentStep}`).classList.add('hidden');
-      document.getElementById(`form-step-${step}`).classList.remove('hidden');
-      
-      // Update progress bar
-      document.querySelectorAll('.progress-step').forEach((el, index) => {
-        if (index + 1 < step) {
-          el.classList.remove('active');
-          el.classList.add('completed');
-        } else if (index + 1 === step) {
-          el.classList.add('active');
-          el.classList.remove('completed');
-        } else {
-          el.classList.remove('active', 'completed');
-        }
-      });
-      document.querySelectorAll('.progress-line').forEach((el, index) => {
-        if (index + 1 < step) {
-          el.classList.add('completed');
-        } else {
-          el.classList.remove('completed');
-        }
-      });
+        document.getElementById(`form-step-${currentStep}`).classList.add('hidden');
+        document.getElementById(`form-step-${step}`).classList.remove('hidden');
+        
+        // Update progress bar
+        document.querySelectorAll('.progress-step').forEach((el, index) => {
+            if (index + 1 < step) {
+                el.classList.remove('active');
+                el.classList.add('completed');
+            } else if (index + 1 === step) {
+                el.classList.add('active');
+                el.classList.remove('completed');
+            } else {
+                el.classList.remove('active', 'completed');
+            }
+        });
+        document.querySelectorAll('.progress-line').forEach((el, index) => {
+            if (index + 1 < step) {
+                el.classList.add('completed');
+            } else {
+                el.classList.remove('completed');
+            }
+        });
 
-      currentStep = step;
+        currentStep = step;
     }
 
     function addEducationEntry() {
-      const entry = document.createElement('div');
-      entry.className = 'education-entry bg-gray-50 rounded-xl p-6 border border-gray-100';
-      entry.innerHTML = `
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Degree</label>
-            <input type="text" name="degree[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" placeholder="e.g., Bachelor of Science">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Institution</label>
-            <input type="text" name="institution[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" placeholder="e.g., University of Example">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Start Year</label>
-            <input type="number" name="start_year[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" placeholder="e.g., 2018">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">End Year (or Expected)</label>
-            <input type="number" name="end_year[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" placeholder="e.g., 2022">
-          </div>
-        </div>
-        <button type="button" onclick="removeEntry(this)" class="mt-4 text-red-600 hover:text-red-800 transition text-sm font-medium">Remove Entry</button>
-      `;
-      document.getElementById('education-entries').appendChild(entry);
+        const entry = document.createElement('div');
+        entry.className = 'education-entry bg-gray-50 rounded-xl p-6 border border-gray-100';
+        entry.innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Degree</label>
+                    <input type="text" name="degree[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" placeholder="e.g., Bachelor of Science">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Institution</label>
+                    <input type="text" name="institution[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" placeholder="e.g., University of Example">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Start Year</label>
+                    <input type="number" name="start_year[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" placeholder="e.g., 2018">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">End Year (or Expected)</label>
+                    <input type="number" name="end_year[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" placeholder="e.g., 2022">
+                </div>
+            </div>
+            <button type="button" onclick="removeEntry(this)" class="mt-4 text-red-600 hover:text-red-800 transition text-sm font-medium">Remove Entry</button>
+        `;
+        document.getElementById('education-entries').appendChild(entry);
     }
 
     function addExperienceEntry() {
-      const entry = document.createElement('div');
-      entry.className = 'experience-entry bg-gray-50 rounded-xl p-6 border border-gray-100';
-      entry.innerHTML = `
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Job Title</label>
-            <input type="text" name="job_title[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" placeholder="e.g., Software Engineer">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Company</label>
-            <input type="text" name="company[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" placeholder="e.g., Tech Corp">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-            <input type="month" name="start_date[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">End Date (or Present)</label>
-            <input type="month" name="end_date[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition">
-          </div>
-          <div class="md:col-span-2">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-            <textarea name="description[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" rows="4" placeholder="Describe your responsibilities and achievements"></textarea>
-          </div>
-        </div>
-        <button type="button" onclick="removeEntry(this)" class="mt-4 text-red-600 hover:text-red-800 transition text-sm font-medium">Remove Entry</button>
-      `;
-      document.getElementById('experience-entries').appendChild(entry);
+        const entry = document.createElement('div');
+        entry.className = 'experience-entry bg-gray-50 rounded-xl p-6 border border-gray-100';
+        entry.innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Job Title</label>
+                    <input type="text" name="job_title[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" placeholder="e.g., Software Engineer">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Company</label>
+                    <input type="text" name="company[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" placeholder="e.g., Tech Corp">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                    <input type="month" name="start_date[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">End Date (or Present)</label>
+                    <input type="month" name="end_date[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea name="description[]" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500 transition" rows="4" placeholder="Describe your responsibilities and achievements"></textarea>
+                </div>
+            </div>
+            <button type="button" onclick="removeEntry(this)" class="mt-4 text-red-600 hover:text-red-800 transition text-sm font-medium">Remove Entry</button>
+        `;
+        document.getElementById('experience-entries').appendChild(entry);
     }
 
     function removeEntry(button) {
-      button.parentElement.remove();
+        button.parentElement.remove();
     }
 
     function addSkill(event) {
-      if (event.key === 'Enter' && event.target.value.trim() !== '') {
-        event.preventDefault();
-        const skill = event.target.value.trim();
-        const skillsContainer = document.getElementById('skills-container');
+        if (event.key === 'Enter' && event.target.value.trim() !== '') {
+            event.preventDefault();
+            const skill = event.target.value.trim();
+            const skillsContainer = document.getElementById('skills-container');
 
-        // Create a skill tag
-        const skillTag = document.createElement('span');
-        skillTag.className = 'bg-purple-100 text-purple-600 px-3 py-1 rounded-full text-sm flex items-center gap-2';
-        skillTag.innerHTML = `
-          ${skill}
-          <input type="hidden" name="skills[]" value="${skill}">
-          <button
-            type="button"
-            class="text-red-500 hover:text-red-700"
-            onclick="removeSkill(this)"
-          >
-            ×
-          </button>
-        `;
+            // Create a skill tag
+            const skillTag = document.createElement('span');
+            skillTag.className = 'bg-purple-100 text-purple-600 px-3 py-1 rounded-full text-sm flex items-center gap-2';
+            skillTag.innerHTML = `
+                ${skill}
+                <input type="hidden" name="skills[]" value="${skill}">
+                <button
+                    type="button"
+                    class="text-red-500 hover:text-red-700"
+                    onclick="removeSkill(this)"
+                >
+                    ×
+                </button>
+            `;
 
-        // Add the skill tag to the container
-        skillsContainer.insertBefore(skillTag, event.target);
+            // Add the skill tag to the container
+            skillsContainer.insertBefore(skillTag, event.target);
 
-        // Clear the input field
-        event.target.value = '';
-      }
+            // Clear the input field
+            event.target.value = '';
+        }
     }
 
     function removeSkill(button) {
-      button.parentElement.remove();
+        button.parentElement.remove();
     }
 
     function submitForm() {
-      // Validate required fields
-      const step1Inputs = document.querySelectorAll('#form-step-1 input[required]');
-      let isValid = true;
-      step1Inputs.forEach(input => {
-        if (!input.value.trim()) {
-          isValid = false;
-          input.classList.add('border-red-500');
-        } else {
-          input.classList.remove('border-red-500');
+        // Validate required fields
+        const step1Inputs = document.querySelectorAll('#form-step-1 input[required]');
+        let isValid = true;
+        step1Inputs.forEach(input => {
+            if (!input.value.trim()) {
+                isValid = false;
+                input.classList.add('border-red-500');
+            } else {
+                input.classList.remove('border-red-500');
+            }
+        });
+
+        if (!isValid) {
+            alert('Please fill out all required fields in Personal Information.');
+            return;
         }
-      });
 
-      if (!isValid) {
-        alert('Please fill out all required fields in Personal Information.');
-        return;
-      }
-
-      // Collect form data for debugging
-      const formData = new FormData(document.getElementById('resume-form'));
-      let dataLog = 'Form Data:\n';
-      for (let [key, value] of formData.entries()) {
-        dataLog += `${key}: ${value}\n`;
-      }
-      console.log(dataLog);
-
-      // Submit the form
-      fetch('/form', {
-        method: 'POST',
-        body: formData
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.text();
-      })
-      .then(html => {
-        document.body.innerHTML = html; // Replace the page content with the response
-      })
-      .catch(error => {
-        console.error('Error submitting form:', error);
-        alert('An error occurred while submitting the form. Check the console for details.');
-      });
+        // Submit the form traditionally
+        document.getElementById('resume-form').submit();
     }
   </script>
 </body>
