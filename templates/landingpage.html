@@ -84,13 +84,29 @@
 
     /* Accordion styles */
     .accordion-header {
-      @apply flex justify-between items-center w-full bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition duration-300 cursor-pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        background-color: white;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+        transition: box-shadow 0.3s;
+        cursor: pointer;
+      }
+      .accordion-header:hover {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
     }
     .accordion-content {
-      @apply hidden p-4 bg-gray-50 rounded-b-xl border border-gray-100;
+      display: none;
+      padding: 1rem;
+      background-color: #f9fafb; /* Tailwind's bg-gray-50 */
+      border-radius: 0.75rem; /* Tailwind's rounded-b-xl */
+      border: 1px solid #f3f4f6; /* Tailwind's border-gray-100 */
     }
     .accordion-content.active {
-      @apply block;
+      display: block;
     }
   </style>
 </head>
@@ -389,7 +405,7 @@
             <div class="text-white font-bold">03</div>
           </div>
           <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100 flex-1">
-            <h3 class="text-xl font-semibold text-gray-900 mb-3">WEAPONIZE & DEPLOY</h3>
+            <h3 class="text-xl font-semibold text-gray-900 mb-3">WEAPONIZE AND DEPLOY</h3>
             <p class="text-gray-600 mb-4">Download your career-changing resume and watch job offers flood your inbox. Warning: may cause extreme career satisfaction.</p>
           </div>
         </div>
