@@ -438,6 +438,26 @@
               <label for="company" class="block text-gray-700 font-medium mb-2">Company</label>
               <input type="text" name="company" id="company" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="e.g., TechCorp" required value="{{ company if company else '' }}">
             </div>
+            <div>
+              <label for="tone" class="block text-gray-700 font-medium mb-2">Tone</label>
+              <select name="tone" id="tone" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <option value="random" {% if tone == "random" %}selected{% endif %}>Random</option>
+                <option value="casual" {% if tone == "casual" %}selected{% endif %}>Casual</option>
+                <option value="witty" {% if tone == "witty" %}selected{% endif %}>Witty</option>
+                <option value="inspired" {% if tone == "inspired" %}selected{% endif %}>Inspired</option>
+                <option value="bold" {% if tone == "bold" %}selected{% endif %}>Bold</option>
+                <option value="poetic" {% if tone == "poetic" %}selected{% endif %}>Poetic</option>
+                <option value="humorous" {% if tone == "humorous" %}selected{% endif %}>Humorous</option>
+                <option value="conversational" {% if tone == "conversational" %}selected{% endif %}>Conversational</option>
+                <option value="professional yet warm" {% if tone == "professional yet warm" %}selected{% endif %}>Professional yet Warm</option>
+                <option value="dramatic" {% if tone == "dramatic" %}selected{% endif %}>Dramatic</option>
+                <option value="reflective" {% if tone == "reflective" %}selected{% endif %}>Reflective</option>
+                <option value="playful" {% if tone == "playful" %}selected{% endif %}>Playful</option>
+                <option value="empathetic" {% if tone == "empathetic" %}selected{% endif %}>Empathetic</option>
+                <option value="adventurous" {% if tone == "adventurous" %}selected{% endif %}>Adventurous</option>
+                <option value="thoughtful" {% if tone == "thoughtful" %}selected{% endif %}>Thoughtful</option>
+              </select>
+            </div>
             <button type="submit" class="bg-gradient-to-r from-purple-600 to-blue-500 text-white px-8 py-4 rounded-xl hover:shadow-lg transition duration-300 text-lg font-medium">
               Generate Cover Letter
             </button>
@@ -462,7 +482,7 @@
                 </button>
               </form>
               <button 
-                onclick="window.location.href='/refresh_cover_letter?name={{ name|urlencode }}&job_title={{ job_title|urlencode }}&email={{ email|urlencode }}&phone={{ phone|urlencode }}&state={{ state|urlencode }}&country={{ country|urlencode }}&linkedin={{ linkedin|urlencode }}{% for skill in skills %}&skills[]={{ skill|urlencode }}{% endfor %}{% for edu in education %}&education_degree[]={{ edu.degree|urlencode }}&education_institution[]={{ edu.institution|urlencode }}&education_start_year[]={{ edu.start_year|urlencode }}&education_end_year[]={{ edu.end_year|urlencode }}{% endfor %}{% for exp in experience %}&experience_job_title[]={{ exp.job_title|urlencode }}&experience_company[]={{ exp.company|urlencode }}&experience_start_date[]={{ exp.start_date|urlencode }}&experience_end_date[]={{ exp.end_date|urlencode }}&experience_description[]={{ exp.description|urlencode }}&experience_raw_description[]={{ exp.raw_description|urlencode }}{% endfor %}&cover_job_title={{ cover_job_title|urlencode }}&company={{ company|urlencode }}'" 
+                onclick="window.location.href='/refresh_cover_letter?name={{ name|urlencode }}&job_title={{ job_title|urlencode }}&email={{ email|urlencode }}&phone={{ phone|urlencode }}&state={{ state|urlencode }}&country={{ country|urlencode }}&linkedin={{ linkedin|urlencode }}{% for skill in skills %}&skills[]={{ skill|urlencode }}{% endfor %}{% for edu in education %}&education_degree[]={{ edu.degree|urlencode }}&education_institution[]={{ edu.institution|urlencode }}&education_start_year[]={{ edu.start_year|urlencode }}&education_end_year[]={{ edu.end_year|urlencode }}{% endfor %}{% for exp in experience %}&experience_job_title[]={{ exp.job_title|urlencode }}&experience_company[]={{ exp.company|urlencode }}&experience_start_date[]={{ exp.start_date|urlencode }}&experience_end_date[]={{ exp.end_date|urlencode }}&experience_description[]={{ exp.description|urlencode }}&experience_raw_description[]={{ exp.raw_description|urlencode }}{% endfor %}&cover_job_title={{ cover_job_title|urlencode }}&company={{ company|urlencode }}&tone={{ tone|urlencode }}'" 
                 class="bg-gradient-to-r from-purple-600 to-blue-500 text-white px-8 py-4 rounded-xl hover:shadow-lg transition duration-300 text-lg font-medium mt-4">
                 Refresh Cover Letter
               </button>

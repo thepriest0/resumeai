@@ -16,6 +16,7 @@ import os
 from urllib.parse import urlencode
 import time
 import logging
+import random
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -27,7 +28,7 @@ import secrets
 secret_key = os.getenv('FLASK_SECRET_KEY')
 if not secret_key:
     logger.warning("FLASK_SECRET_KEY not found in environment. Generating a temporary secret key.")
-    secret_key = secrets.token_hex(16)  # Generate a 32-character hex string
+    secret_key = secrets.token_hex(16)
 app.secret_key = secret_key
 CORS(app, resources={
     r"/preview_resume": {
@@ -53,7 +54,11 @@ def call_gpt41(prompt, system_message, variation_seed=None):
         modified_prompt = (
             f"{prompt}\n\n[Variation Seed: {variation_seed}] "
             "To ensure a fresh, unique, and improved response, use this seed to vary your wording, style, and examples. "
-            "Generate a response that surpasses previous outputs by using more innovative language, dynamic phrasing, and creative examples, while maintaining the core meaning and intent."
+            "Generate a response that surpasses previous outputs by using more innovative language, dynamic phrasing, and creative examples, while maintaining the core meaning and intent. "
+            "Be as creative as possible, pulling from a vast vocabulary to craft unique, human-like content. "
+            "Avoid repetitive or predictable language (e.g., overused words like 'spearheaded', 'engineered', or 'streamlined'). "
+            "Ensure the phrasing feels fresh, natural, and engaging, with a distinct style that changes with each generation. "
+            "Make the content sound like it was written by a creative human, not an AI."
         )
 
         payload = {
@@ -78,6 +83,7 @@ def enhance_job_description(description, variation_seed=None):
     system_message = (
         "You are a master copywriter with a flair for creative and persuasive language, specializing in resume writing. "
         "Transform the given job description into 3-5 concise, achievement-based resume bullet points. "
+        "Use a tone randomly selected from: casual, witty, inspired, bold, poetic, humorous, conversational, professional yet warm, dramatic, reflective, playful, empathetic, adventurous, thoughtful. "
         "Use a rich variety of dynamic action verbs and vivid language to captivate recruiters, highlighting the candidate's unique impact with professional flair. "
         "Incorporate quantifiable achievements with specific metrics where possible and weave in industry-specific keywords to enhance relevance. "
         "Craft each bullet with imaginative, memorable phrasing that paints a picture of success and innovation, ensuring the tone remains professional and striking. "
@@ -107,18 +113,24 @@ def enhance_job_description(description, variation_seed=None):
 
     return content
 
-def generate_cover_letter(resume_data, job_title, company, variation_seed=None):
+def generate_cover_letter(resume_data, job_title, company, tone=None, variation_seed=None):
+    tones = ["casual", "witty", "inspired", "bold", "poetic", "humorous", "conversational", "professional yet warm", "dramatic", "reflective", "playful", "empathetic", "adventurous", "thoughtful"]
+    if tone == "random":
+        tone = random.choice(tones)
+    elif tone not in tones:
+        tone = "professional yet warm"
+
     system_message = (
-        "You are a master copywriter with a talent for crafting eloquent, memorable, and highly persuasive cover letters. "
-        "Write a concise, professional cover letter tailored to the given job title and company, using the candidate's resume data. "
-        "Address the letter to 'Hiring Manager'. Include a greeting, an engaging introduction that captures attention with a unique hook, "
-        "2-3 paragraphs highlighting the candidate’s most relevant skills, experiences, and achievements with vivid, imaginative language, "
-        "and a strong closing with a compelling call to action that leaves a lasting impression. "
-        "Optionally mention the candidate's location (state and country) in the introduction if relevant to the role. "
-        "Use sophisticated, professional language infused with personality—blend enthusiasm, confidence, and creativity to make the letter stand out. "
-        "When refreshing, generate a completely new letter that improves upon previous outputs by experimenting with different tones (e.g., passionate, visionary, or empathetic), "
-        "varying sentence structures, and introducing fresh, imaginative examples, while maintaining the core message and professionalism. "
-        "Do not include any introductory text like 'Here is a cover letter...'—only provide the letter content."
+        f"You are a master copywriter with a talent for crafting eloquent, memorable, and highly persuasive cover letters. "
+        f"Write a concise, professional cover letter tailored to the given job title and company, using the candidate's resume data. "
+        f"Address the letter to 'Hiring Manager'. Include a greeting, an engaging introduction that captures attention with a unique hook, "
+        f"2-3 paragraphs highlighting the candidate’s most relevant skills, experiences, and achievements with vivid, imaginative language, "
+        f"and a strong closing with a compelling call to action that leaves a lasting impression. "
+        f"Use a {tone} tone. "
+        f"Optionally mention the candidate's location (state and country) in the introduction if relevant to the role. "
+        f"Use sophisticated, professional language infused with personality—blend enthusiasm, confidence, and creativity to make the letter stand out. "
+        f"When refreshing, generate a completely new letter that improves upon previous outputs by experimenting with different tones, varying sentence structures, and introducing fresh, imaginative examples, while maintaining the core message and professionalism. "
+        f"Do not include any introductory text like 'Here is a cover letter...'—only provide the letter content."
     )
     location = f"{resume_data['state']}, {resume_data['country']}" if resume_data.get('state') and resume_data.get('country') else "unspecified location"
     prompt = (
@@ -128,8 +140,8 @@ def generate_cover_letter(resume_data, job_title, company, variation_seed=None):
         f"Name: {resume_data['name']}, "
         f"Job Title: {resume_data['job_title']}, "
         f"Skills: {', '.join(resume_data['skills'])}, "
-        f"Experience: {resume_data['experience']}, "
-        f"Education: {resume_data['education']}."
+        f"Experience: {', '.join([f'{exp['job_title']} at {exp['company']}' for exp in resume_data['experience']] if resume_data['experience'] else ['No experience listed'])}, "
+        f"Education: {', '.join([f'{edu['degree']} from {edu['institution']}' for edu in resume_data['education']] if resume_data['education'] else ['No education listed'])}."
     )
     content = call_gpt41(prompt, system_message, variation_seed)
 
@@ -197,7 +209,6 @@ def generate_pdf(name, job_title, email, phone, state, country, linkedin, skills
                         if y_position < margin:
                             p.showPage()
                             y_position = height - margin
-                            # Reapply font settings after page break
                             if font == "Times-Roman" and color == colors.black:
                                 p.setFont("Times-Roman", font_size)
                             else:
@@ -242,7 +253,6 @@ def generate_pdf(name, job_title, email, phone, state, country, linkedin, skills
                 if y_position < margin:
                     p.showPage()
                     y_position = height - margin
-                    # Reapply font settings after page break
                     if font == "Times-Roman" and bold:
                         p.setFont("Times-Bold", font_size)
                     elif font == "Helvetica" and bold:
@@ -530,21 +540,21 @@ def generate_pdf(name, job_title, email, phone, state, country, linkedin, skills
             location = f"{state}, {country}" if state and country else (state or country or '')
             if location:
                 draw_wrapped_text(location, 9, 0.5 * inch, sidebar_y, max_width=sidebar_width - margin)
-                sidebar_y = y_position - 14
+                sidebar_y -= 14
             draw_wrapped_text(email, 9, 0.5 * inch, sidebar_y, max_width=sidebar_width - margin)
-            sidebar_y = y_position - 14
+            sidebar_y -= 14
             if phone:
                 draw_wrapped_text(phone, 9, 0.5 * inch, sidebar_y, max_width=sidebar_width - margin)
-                sidebar_y = y_position - 14
+                sidebar_y -= 14
             if linkedin:
                 draw_wrapped_text(linkedin, 9, 0.5 * inch, sidebar_y, max_width=sidebar_width - margin, color=HexColor("#0000FF"), underline=True)
-                sidebar_y = y_position - 20
+                sidebar_y -= 20
             if skills:
                 draw_text("Skills", 0.5 * inch, sidebar_y, 12, bold=True, color=HexColor("#4682B4"))
-                sidebar_y = y_position - 20
+                sidebar_y -= 20
                 for skill in skills:
                     draw_bullet_text(skill, 9, x_start=0.5 * inch, y_start=sidebar_y, max_width=sidebar_width - margin)
-                    sidebar_y = y_position - 10
+                    sidebar_y -= 10
             y_position = height - margin
             lines = wrap_text(name, "Helvetica-Bold", 18, main_content_width)
             for line in lines:
@@ -669,7 +679,6 @@ def landing():
 def form():
     if request.method == 'POST':
         try:
-            # Extract basic information
             name = request.form.get('fullname', '').strip()
             job_title = request.form.get('job_title', '').strip()
             email = request.form.get('email', '').strip()
@@ -681,11 +690,9 @@ def form():
             if not name or not email:
                 return render_template('form.html', error="Full Name and Email are required.")
 
-            # Extract skills
             skills = request.form.getlist('skills[]')
             skills = [skill.strip() for skill in skills if skill.strip()]
 
-            # Extract education
             education = []
             degrees = request.form.getlist('degree[]')
             institutions = request.form.getlist('institution[]')
@@ -701,7 +708,6 @@ def form():
                         'end_year': end.strip() or 'N/A'
                     })
 
-            # Extract experience
             experience = []
             job_titles = request.form.getlist('job_title[]')
             companies = request.form.getlist('company[]')
@@ -723,7 +729,6 @@ def form():
                         'description': improved_desc
                     })
 
-            # Store resume data in session
             resume_data = {
                 'name': name,
                 'job_title': job_title,
@@ -746,7 +751,6 @@ def form():
 
     elif request.args.get('edit') == '1':
         try:
-            # Load resume data from session for editing
             resume_data = session.get('resume_data', {})
             if not resume_data:
                 return render_template('form.html', error="No resume data found to edit.")
@@ -762,12 +766,10 @@ def form():
 @app.route('/result')
 def result():
     try:
-        # Retrieve resume data from session
         resume_data = session.get('resume_data', {})
         if not resume_data:
             return render_template('result.html', error="No resume data found.")
 
-        # Ensure all fields have default values
         resume_data.setdefault('name', 'N/A')
         resume_data.setdefault('job_title', '')
         resume_data.setdefault('email', 'N/A')
@@ -779,12 +781,12 @@ def result():
         resume_data.setdefault('education', [])
         resume_data.setdefault('experience', [])
 
-        # Handle cover letter if provided
         cover_letter = request.args.get('cover_letter', '')
         cover_job_title = request.args.get('cover_job_title', '')
         company = request.args.get('company', '')
+        tone = request.args.get('tone', 'random')
 
-        return render_template('result.html', **resume_data, cover_letter=cover_letter, cover_job_title=cover_job_title, company=company)
+        return render_template('result.html', **resume_data, cover_letter=cover_letter, cover_job_title=cover_job_title, company=company, tone=tone)
 
     except Exception as e:
         logger.error(f"Error rendering result page: {e}")
@@ -795,7 +797,6 @@ def preview_resume():
     try:
         logger.debug("Starting preview_resume endpoint")
         
-        # Extract form data
         name = request.form.get('name', 'N/A')
         job_title = request.form.get('job_title', '')
         email = request.form.get('email', 'N/A')
@@ -808,14 +809,13 @@ def preview_resume():
 
         logger.debug(f"Received form data: name={name}, template={template}, skills={skills}")
 
-        # Extract education data with proper handling
         education = []
         degrees = request.form.getlist('education_degree[]')
         institutions = request.form.getlist('education_institution[]')
         start_years = request.form.getlist('education_start_year[]')
         end_years = request.form.getlist('education_end_year[]')
         for degree, institution, start, end in zip(degrees, institutions, start_years, end_years):
-            if degree.strip() or institution.strip():  # Include if at least one field is provided
+            if degree.strip() or institution.strip():
                 education.append({
                     'degree': degree.strip() or 'N/A',
                     'institution': institution.strip() or 'N/A',
@@ -823,7 +823,6 @@ def preview_resume():
                     'end_year': end.strip() or 'N/A'
                 })
 
-        # Extract experience data with proper handling
         experience = []
         job_titles = request.form.getlist('experience_job_title[]')
         companies = request.form.getlist('experience_company[]')
@@ -831,7 +830,7 @@ def preview_resume():
         end_dates = request.form.getlist('experience_end_date[]')
         descriptions = request.form.getlist('experience_description[]')
         for title, company, start, end, desc in zip(job_titles, companies, start_dates, end_dates, descriptions):
-            if title.strip() and company.strip():  # Only include if both title and company are provided
+            if title.strip() and company.strip():
                 experience.append({
                     'job_title': title.strip() or 'N/A',
                     'company': company.strip() or 'N/A',
@@ -840,7 +839,6 @@ def preview_resume():
                     'description': desc.strip() or 'Description not provided.'
                 })
 
-        # Generate PDF for preview
         logger.debug("Generating PDF for preview")
         buffer = generate_pdf(name, job_title, email, phone, state, country, linkedin, skills, education, experience, template)
         pdf_data = buffer.getvalue()
@@ -850,7 +848,6 @@ def preview_resume():
             logger.error("PDF data is empty")
             return Response("Error: Generated PDF is empty", status=500, mimetype='text/plain')
 
-        # Set response headers
         headers = {
             'Content-Type': 'application/pdf',
             'Content-Disposition': 'inline; filename=preview.pdf',
@@ -1036,6 +1033,7 @@ def generate_cover_letter_route():
 
         cover_job_title = request.form.get('job_title', 'Job Title')
         company = request.form.get('company', 'Company')
+        tone = request.form.get('tone', 'random')
 
         resume_data = {
             'name': name,
@@ -1050,8 +1048,8 @@ def generate_cover_letter_route():
             'experience': experience
         }
 
-        cover_letter = generate_cover_letter(resume_data, cover_job_title, company)
-        return render_template('result.html', **resume_data, cover_letter=cover_letter, cover_job_title=cover_job_title, company=company)
+        cover_letter = generate_cover_letter(resume_data, cover_job_title, company, tone)
+        return render_template('result.html', **resume_data, cover_letter=cover_letter, cover_job_title=cover_job_title, company=company, tone=tone)
 
     except Exception as e:
         logger.error(f"Error in generate_cover_letter: {e}")
@@ -1112,6 +1110,8 @@ def refresh_cover_letter():
 
         cover_job_title = request.args.get('cover_job_title', 'Job Title')
         company = request.args.get('company', 'Company')
+        tone = request.args.get('tone', 'random')
+        variation_seed = str(time.time())
 
         resume_data = {
             'name': name,
@@ -1126,9 +1126,8 @@ def refresh_cover_letter():
             'experience': experience
         }
 
-        variation_seed = str(time.time())
-        cover_letter = generate_cover_letter(resume_data, cover_job_title, company, variation_seed)
-        return render_template('result.html', **resume_data, cover_letter=cover_letter, cover_job_title=cover_job_title, company=company)
+        cover_letter = generate_cover_letter(resume_data, cover_job_title, company, tone, variation_seed)
+        return render_template('result.html', **resume_data, cover_letter=cover_letter, cover_job_title=cover_job_title, company=company, tone=tone)
 
     except Exception as e:
         logger.error(f"Error in refresh_cover_letter: {e}")
